@@ -13,7 +13,7 @@
 update pembayaran pay
 set tagihan_id = keep.id
 from (
-  select min(id) as id, perumahan_id, rumah_id, iuran_jenis_id, bulan, tahun
+  select min(id::text)::uuid as id, perumahan_id, rumah_id, iuran_jenis_id, bulan, tahun
   from tagihan
   group by perumahan_id, rumah_id, iuran_jenis_id, bulan, tahun
   having count(*) > 1
@@ -29,7 +29,7 @@ where pay.tagihan_id = dup.id;
 
 delete from tagihan dup
 using (
-  select min(id) as id, perumahan_id, rumah_id, iuran_jenis_id, bulan, tahun
+  select min(id::text)::uuid as id, perumahan_id, rumah_id, iuran_jenis_id, bulan, tahun
   from tagihan
   group by perumahan_id, rumah_id, iuran_jenis_id, bulan, tahun
   having count(*) > 1
@@ -45,7 +45,7 @@ where dup.perumahan_id = keep.perumahan_id
 update tagihan t
 set iuran_jenis_id = keep.id
 from (
-  select perumahan_id, nama, min(id) as id
+  select perumahan_id, nama, min(id::text)::uuid as id
   from iuran_jenis
   group by perumahan_id, nama
   having count(*) > 1
@@ -59,7 +59,7 @@ where t.iuran_jenis_id = dup.id;
 -- 3) Hapus jenis iuran duplikat (yang bukan id terkecil)
 delete from iuran_jenis dup
 using (
-  select perumahan_id, nama, min(id) as id
+  select perumahan_id, nama, min(id::text)::uuid as id
   from iuran_jenis
   group by perumahan_id, nama
   having count(*) > 1
