@@ -10,6 +10,7 @@ import WargaPage from './pages/Warga'
 import IuranPage from './pages/Iuran'
 import KasPage from './pages/Kas'
 import KomunitasPage from './pages/Komunitas'
+import LayananPage from './pages/Layanan'
 import Placeholder from './pages/Placeholder'
 
 function Loading() {
@@ -56,6 +57,7 @@ export default function App() {
           <Route path="iuran" element={<IuranPage />} />
           <Route path="kas" element={<KasPage />} />
           <Route path="komunitas" element={<KomunitasPage />} />
+          <Route path="layanan" element={<LayananPage />} />
           <Route path="*" element={<Placeholder />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

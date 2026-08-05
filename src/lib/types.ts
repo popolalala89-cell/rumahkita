@@ -158,6 +158,43 @@ export interface Keluhan {
   created_at: string
 }
 
+export interface Fasilitas {
+  id: string
+  perumahan_id: string
+  nama: string
+  kapasitas: number
+  biaya: number
+  foto_url: string | null
+}
+
+export type BookingStatus = 'menunggu' | 'disetujui' | 'ditolak' | 'selesai' | 'batal'
+
+export interface Booking {
+  id: string
+  perumahan_id: string
+  fasilitas_id: string
+  warga_id: string | null
+  tgl: string
+  jam_mulai: string
+  jam_selesai: string
+  keperluan: string
+  status: BookingStatus
+  created_at: string
+}
+
+export type SuratStatus = 'diajukan' | 'terbit' | 'batal'
+
+export interface Surat {
+  id: string
+  perumahan_id: string
+  no_surat: string
+  jenis: string
+  warga_id: string | null
+  keperluan: string
+  tgl: string
+  status: SuratStatus
+}
+
 export const ROLE_LABEL: Record<Role, string> = {
   super_admin: 'Super Admin',
   ketua: 'Ketua',
