@@ -63,7 +63,7 @@ Repo → **Settings → Secrets and variables → Actions**:
 Workflow `.github/workflows/deploy-pages.yml` otomatis build + deploy tiap push ke `main`.
 
 ### 6. Domain rumahkita.my.id
-Beli di SumoPod, lalu di GitHub Pages setting arahkan ke custom domain rumahkita.my.id (A records / CNAME — pola sama seperti proyek Pa sebelumnya). File `public/CNAME` sudah disiapkan.
+Beli di SumoPod, lalu arahkan DNS ke GitHub Pages (A records / CNAME — pola sama seperti proyek Pa sebelumnya). Setelah DNS aktif, commit file `public/CNAME` berisi `rumahkita.my.id` supaya domain dipakai.
 
 ## Develop lokal (Termux / laptop)
 
