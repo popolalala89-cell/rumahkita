@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>RumahKita</title>
+    <script>
+      ;(function () {
+        var r = sessionStorage.getItem('redirect')
+        if (r) {
+          sessionStorage.removeItem('redirect')
+          location.replace(r)
+        } else {
+          location.replace('/')
+        }
+      })()
+    </script>
+  </head>
+  <body></body>
+</html>

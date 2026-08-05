@@ -1,0 +1,20 @@
+{
+  "name": "RumahKita — Manajemen Perumahan",
+  "short_name": "RumahKita",
+  "description": "Manajemen perumahan: iuran, pengumuman, layanan warga.",
+  "lang": "id",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#034BB9",
+  "theme_color": "#034BB9",
+  "icons": [
+    {
+      "src": "/icons/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

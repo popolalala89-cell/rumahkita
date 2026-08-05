@@ -1,0 +1,55 @@
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { useAuth } from './lib/auth'
+import EntryScreen from './pages/EntryScreen'
+import Login from './pages/Login'
+import Daftar from './pages/Daftar'
+import AdminLayout from './pages/AdminLayout'
+import Dashboard from './pages/Dashboard'
+import Placeholder from './pages/Placeholder'
+
+function Loading() {
+  return (
+    <div className="loading-screen">
+      <div className="spinner" />
+      <div>Memuat RumahKita...</div>
+    </div>
+  )
+}
+
+function RequireAuth({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth()
+  if (loading) return <Loading />
+  if (!user) return <Navigate to="/masuk" replace />
+  return <>{children}</>
+}
+
+function PublicOnly({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth()
+  if (loading) return <Loading />
+  if (user) return <Navigate to="/app" replace />
+  return <>{children}</>
+}
+
+export default function App() {
+  return (
+    <>
+      <Routes>
+        <Route path="/" element={<PublicOnly><EntryScreen /></PublicOnly>} />
+        <Route path="/masuk" element={<PublicOnly><Login /></PublicOnly>} />
+        <Route path="/daftar" element={<PublicOnly><Daftar /></PublicOnly>} />
+        <Route
+          path="/app"
+          element={
+            <RequireAuth>
+              <AdminLayout />
+            </RequireAuth>
+          }
+        >
+          <Route index element={<Dashboard />} />
+          <Route path="*" element={<Placeholder />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
+  )
+}
