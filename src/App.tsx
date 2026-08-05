@@ -1,10 +1,14 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './lib/auth'
+import { ToastHost } from './lib/toast'
 import EntryScreen from './pages/EntryScreen'
 import Login from './pages/Login'
 import Daftar from './pages/Daftar'
 import AdminLayout from './pages/AdminLayout'
 import Dashboard from './pages/Dashboard'
+import WargaPage from './pages/Warga'
+import IuranPage from './pages/Iuran'
+import KasPage from './pages/Kas'
 import Placeholder from './pages/Placeholder'
 
 function Loading() {
@@ -33,6 +37,7 @@ function PublicOnly({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <>
+      <ToastHost />
       <Routes>
         <Route path="/" element={<PublicOnly><EntryScreen /></PublicOnly>} />
         <Route path="/masuk" element={<PublicOnly><Login /></PublicOnly>} />
@@ -46,6 +51,9 @@ export default function App() {
           }
         >
           <Route index element={<Dashboard />} />
+          <Route path="warga" element={<WargaPage />} />
+          <Route path="iuran" element={<IuranPage />} />
+          <Route path="kas" element={<KasPage />} />
           <Route path="*" element={<Placeholder />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

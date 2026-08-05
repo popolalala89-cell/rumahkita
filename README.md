@@ -9,7 +9,7 @@ Aplikasi manajemen perumahan (RT/RW) — **super lengkap, multi-perumahan, onlin
 | Fase | Modul |
 |------|-------|
 | 0 | Fondasi: login/daftar (kode undangan), role, dashboard |
-| 1 | Warga & Rumah, Iuran, Tagihan, Pembayaran, Kas, Laporan Excel |
+| 1 ✅ | Warga & Rumah, Iuran, Tagihan, Pembayaran, Kas, Laporan Excel |
 | 2 | Pengumuman, Kegiatan, Polling, Direktori Usaha warga |
 | 3 | Keluhan, Booking fasilitas, Permohonan surat |
 | 4 | Keamanan (tamu & kendaraan), Aset & pemeliharaan, Dokumen & kontak |

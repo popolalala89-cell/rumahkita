@@ -82,6 +82,19 @@ export interface Pembayaran {
   created_at: string
 }
 
+export interface KasTransaksi {
+  id: string
+  perumahan_id: string
+  tgl: string
+  jenis: 'masuk' | 'keluar'
+  kategori: string
+  nominal: number
+  keterangan: string
+  user_id: string | null
+  sumber?: string | null
+  created_at: string
+}
+
 export interface Pengumuman {
   id: string
   perumahan_id: string
