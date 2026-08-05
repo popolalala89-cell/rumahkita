@@ -21,7 +21,14 @@ export default function Dashboard() {
 
   useEffect(() => {
     let alive = true
-    if (!profile) return
+    if (!profile) {
+      // profile belum termuat — jangan spin tanpa batas
+      const t = setTimeout(() => alive && setReady(true), 6000)
+      return () => {
+        alive = false
+        clearTimeout(t)
+      }
+    }
 
     const pid = profile.perumahan_id
     const now = new Date()

@@ -20,15 +20,18 @@ const AuthContext = createContext<AuthState>(null as unknown as AuthState)
 export const useAuth = () => useContext(AuthContext)
 
 async function loadProfile(userId: string): Promise<{ profile: Profile | null; perumahan: Perumahan | null }> {
+  // jaring pengaman: kalau fetch menggantung, jangan biarkan app nge-load terus
+  function withTimeout<T>(p: PromiseLike<T>, ms: number): Promise<T | null> {
+    return Promise.race([p, new Promise<null>((r) => setTimeout(() => r(null), ms))])
+  }
   try {
-    const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
-    if (!profile) return { profile: null, perumahan: null }
-    const { data: perumahan } = await supabase
-      .from('perumahan')
-      .select('*')
-      .eq('id', profile.perumahan_id)
-      .maybeSingle()
-    return { profile, perumahan }
+    const prof = await withTimeout(supabase.from('profiles').select('*').eq('id', userId).maybeSingle(), 8000)
+    if (!prof?.data) return { profile: null, perumahan: null }
+    const per = await withTimeout(
+      supabase.from('perumahan').select('*').eq('id', prof.data.perumahan_id).maybeSingle(),
+      8000
+    )
+    return { profile: prof.data as Profile, perumahan: (per?.data as Perumahan) ?? null }
   } catch {
     return { profile: null, perumahan: null }
   }
@@ -45,6 +48,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let alive = true
     // deteksi link reset password (type=recovery) sebelum supabase-js membersihkan hash URL
     if (window.location.hash.includes('type=recovery')) setIsRecovery(true)
+    // jaring pengaman: apa pun yang terjadi, layar loading maksimal 10 detik
+    const safety = setTimeout(() => {
+      if (alive) setLoading(false)
+    }, 10000)
     supabase.auth.getSession().then(({ data }) => {
       if (!alive) return
       const u = data.session?.user ?? null
@@ -80,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       alive = false
+      clearTimeout(safety)
       sub.subscription.unsubscribe()
     }
   }, [])
