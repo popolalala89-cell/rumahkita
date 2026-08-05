@@ -27,6 +27,7 @@ export default function PengaturanPage() {
   const [ready, setReady] = useState(false)
   const [roleBusy, setRoleBusy] = useState<string | null>(null)
   const [akifBusy, setAkifBusy] = useState<string | null>(null)
+  const [bkpBusy, setBkpBusy] = useState(false)
 
   useEffect(() => {
     if (perumahan) {
@@ -109,6 +110,34 @@ export default function PengaturanPage() {
       showToast(e instanceof Error ? e.message : 'Gagal', 'danger')
     } finally {
       setAkifBusy(null)
+    }
+  }
+
+  const cashback = async () => {
+    if (!pid) return
+    setBkpBusy(true)
+    try {
+      const { data, error } = await supabase.rpc('backup_perumahan')
+      if (error) throw error
+      const res = data as { ok?: boolean; error?: string } | null
+      if (res && res.ok === false) throw new Error(res.error || 'Gagal membuat cadangan')
+      if (!res || typeof res !== 'object') throw new Error('Data cadangan kosong')
+      const payload = JSON.stringify(res, null, 2)
+      const blob = new Blob([payload], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      const ts = new Date().toISOString().replace(/[-:.]/g, '').slice(0, 14)
+      a.href = url
+      a.download = `cadangan-rumahkita-${ts}.json`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+      showToast(`Cadangan diunduh (${(payload.length / 1024).toFixed(1)} KB)`, 'success')
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Gagal membuat cadangan', 'danger')
+    } finally {
+      setBkpBusy(false)
     }
   }
 
@@ -216,6 +245,22 @@ export default function PengaturanPage() {
             )
           })
         )}
+      </div>
+
+      <div className="card" style={{ marginTop: 12 }}>
+        <div className="card-title">
+          <span className="mat-icon">backup</span>
+          <span style={{ fontWeight: 700 }}>Cadangkan Data</span>
+        </div>
+        <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 12 }}>
+          Unduh seluruh data perumahan (warga, rumah, iuran, kas, aset, dokumen) sebagai satu file JSON.
+          Simpan file ini di tempat aman sebagai cadangan berkala.
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button className="btn btn-outline" onClick={cashback} disabled={bkpBusy}>
+            {bkpBusy ? '⏳ Membuat…' : '⬇️ Unduh Cadangan (JSON)'}
+          </button>
+        </div>
       </div>
     </div>
   )
