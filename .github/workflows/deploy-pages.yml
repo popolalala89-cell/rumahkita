@@ -17,6 +17,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      env_ready: ${{ steps.envcheck.outputs.ready }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,7 +26,10 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci || npm install
-      - name: Inject Supabase env
+      - name: Cek konfigurasi Supabase
+        id: envcheck
+        run: echo "ready=${{ secrets.VITE_SUPABASE_URL != '' && secrets.VITE_SUPABASE_ANON_KEY != '' }}" >> "$GITHUB_OUTPUT"
+      - name: Inject env
         run: |
           echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}" > .env
           echo "VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}" >> .env
@@ -36,7 +41,7 @@ jobs:
 
   deploy:
     needs: build
-    if: ${{ secrets.VITE_SUPABASE_URL != '' && secrets.VITE_SUPABASE_ANON_KEY != '' }}
+    if: needs.build.outputs.env_ready == 'true'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
