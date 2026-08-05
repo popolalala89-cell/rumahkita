@@ -195,6 +195,72 @@ export interface Surat {
   status: SuratStatus
 }
 
+export interface BukuTamu {
+  id: string
+  perumahan_id: string
+  tgl: string
+  nama: string
+  tujuan_rumah_id: string | null
+  keperluan: string
+  jam_masuk: string
+  jam_keluar: string | null
+  petugas_id: string | null
+  created_at: string
+}
+
+export interface KendaraanLog {
+  id: string
+  perumahan_id: string
+  tgl: string
+  plat: string
+  jenis: string
+  arah: 'masuk' | 'keluar'
+  jam: string
+  petugas_id: string | null
+  created_at: string
+}
+
+export interface Aset {
+  id: string
+  perumahan_id: string
+  nama: string
+  kategori: string
+  jumlah: number
+  kondisi: string
+  lokasi: string
+  tgl_beli: string | null
+  harga: number
+  foto_url: string | null
+}
+
+export interface Pemeliharaan {
+  id: string
+  perumahan_id: string
+  aset_id: string
+  tgl: string
+  jenis: string
+  biaya: number
+  keterangan: string
+}
+
+export interface DokumenTabel {
+  id: string
+  perumahan_id: string
+  judul: string
+  kategori: string
+  file_url: string | null
+  tgl: string
+}
+
+export interface KontakPenting {
+  id: string
+  perumahan_id: string
+  nama: string
+  kategori: string
+  no_hp: string
+  alamat: string
+}
+
 export const ROLE_LABEL: Record<Role, string> = {
   super_admin: 'Super Admin',
   ketua: 'Ketua',

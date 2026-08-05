@@ -11,6 +11,9 @@ import IuranPage from './pages/Iuran'
 import KasPage from './pages/Kas'
 import KomunitasPage from './pages/Komunitas'
 import LayananPage from './pages/Layanan'
+import KeamananPage from './pages/Keamanan'
+import AsetPage from './pages/Aset'
+import DokumenPage from './pages/Dokumen'
 import Placeholder from './pages/Placeholder'
 
 function Loading() {
@@ -58,6 +61,9 @@ export default function App() {
           <Route path="kas" element={<KasPage />} />
           <Route path="komunitas" element={<KomunitasPage />} />
           <Route path="layanan" element={<LayananPage />} />
+          <Route path="keamanan" element={<KeamananPage />} />
+          <Route path="aset" element={<AsetPage />} />
+          <Route path="dokumen" element={<DokumenPage />} />
           <Route path="*" element={<Placeholder />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

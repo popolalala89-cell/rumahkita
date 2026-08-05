@@ -12,7 +12,7 @@ Aplikasi manajemen perumahan (RT/RW) — **super lengkap, multi-perumahan, onlin
 | 1 ✅ | Warga & Rumah, Iuran, Tagihan, Pembayaran, Kas, Laporan Excel |
 | 2 ✅ | Pengumuman, Kegiatan, Polling, Direktori Usaha warga |
 | 3 ✅ | Keluhan, Booking fasilitas, Permohonan surat |
-| 4 | Keamanan (tamu & kendaraan), Aset & pemeliharaan, Dokumen & kontak |
+| 4 ✅ | Keamanan (tamu & kendaraan), Aset & pemeliharaan, Dokumen & kontak penting |
 | 5 | PWA (install dari HP), notifikasi WhatsApp, landing publik |
 
 ## Struktur proyek
