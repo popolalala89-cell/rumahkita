@@ -5,6 +5,7 @@ import Modal from '../components/ui/Modal'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import { showToast } from '../lib/toast'
 import { formatTanggal } from '../lib/format'
+import { waShare } from '../lib/wa'
 import type { DirektoriUsaha, Kegiatan, Pengumuman, Polling, PollingSuara, Warga } from '../lib/types'
 
 type Tab = 'pengumuman' | 'kegiatan' | 'polling' | 'usaha'
@@ -386,6 +387,13 @@ export default function KomunitasPage() {
                 <div className="card-title">
                   {p.penting ? <span className="badge badge-red">Penting</span> : <span className="badge badge-blue">Info</span>}
                   <span style={{ flex: 1, minWidth: 0 }}>{p.judul}</span>
+                  <button
+                    className="btn btn-sm btn-outline"
+                    style={{ minHeight: 30 }}
+                    onClick={() => waShare(`📢 *${p.judul}*\n${p.isi ?? ''}\n\n— dari aplikasi RumahKita`)}
+                  >
+                    📤
+                  </button>
                   {isPengurus && (
                     <>
                       <button className="btn btn-sm btn-outline" style={{ minHeight: 30 }} onClick={() => openP(p)}>

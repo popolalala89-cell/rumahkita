@@ -14,6 +14,15 @@ import { AuthProvider } from './lib/auth'
   }
 })()
 
+// PWA: daftarkan service worker (offline + bisa di-install dari HP)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      /* offline saja; app tetap jalan normal */
+    })
+  })
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>

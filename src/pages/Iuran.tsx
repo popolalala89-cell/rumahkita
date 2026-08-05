@@ -7,6 +7,7 @@ import { showToast } from '../lib/toast'
 import { formatRp, formatTanggal } from '../lib/format'
 import { downloadExcel } from '../lib/exportExcel'
 import { insertKas, hapusKasByTagihan } from '../lib/kas'
+import { waShare } from '../lib/wa'
 import type { IuranJenis, Pembayaran, Rumah, Tagihan } from '../lib/types'
 
 const NAMA_BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
@@ -262,12 +263,36 @@ export default function IuranPage() {
     }
   }
 
-  // ── export excel ────────────────────────────────────
-  const exportExcel = () => {
+  // ── share rekap tagihan via WhatsApp ───────────────
+  const shareTagihanWA = () => {
     if (tagihan.length === 0) {
-      showToast('Belum ada tagihan untuk diekspor', 'warning')
+      showToast('Belum ada tagihan untuk dibagikan', 'warning')
       return
     }
+    const belum = tagihan.filter((t) => t.status === 'belum')
+    const lunas = tagihan.length - belum.length
+    const total = tagihan.reduce((s, t) => s + t.nominal, 0)
+    const terkumpul = tagihan.filter((t) => t.status === 'lunas').reduce((s, t) => s + t.nominal, 0)
+    const periode = `${NAMA_BULAN[bulan - 1]} ${tahun}`
+    let msg = `*INFO IURAN ${periode.toUpperCase()}*\n`
+    msg += `Total tagihan: ${tagihan.length} rumah\n`
+    msg += `Sudah bayar: ${lunas}\n`
+    msg += `Belum bayar: ${belum.length}\n\n`
+    msg += `💰 Terkumpul: ${formatRp(terkumpul)} dari ${formatRp(total)}\n`
+    if (belum.length > 0) {
+      msg += `\nMohon segera bayar iuran ${periode}:\n`
+      belum.slice(0, 15).forEach((t) => {
+        const j = jenis.find((x) => x.id === t.iuran_jenis_id)
+        msg += `• ${rumahLabel(t.rumah_id)} — ${j?.nama ?? ''} ${formatRp(t.nominal)}\n`
+      })
+      if (belum.length > 15) msg += `...dan ${belum.length - 15} tagihan lainnya\n`
+    }
+    msg += `\nTerima kasih 🙏`
+    waShare(msg)
+  }
+
+  // ── export excel ────────────────────────────────────
+  const exportExcel = () => {
     const rows = tagihan.map((t) => {
       const j = jenis.find((x) => x.id === t.iuran_jenis_id)
       const p = paymentMap.get(t.id)
@@ -371,6 +396,9 @@ export default function IuranPage() {
         <div className="row-actions" style={{ marginTop: 12, marginBottom: 0 }}>
           <button className="btn btn-outline" onClick={exportExcel}>
             <span className="mat-icon">file_download</span> Excel
+          </button>
+          <button className="btn btn-outline" onClick={shareTagihanWA} disabled={tagihan.length === 0}>
+            <span className="mat-icon">chat</span> WA
           </button>
           <button className="btn btn-primary" onClick={() => setGenOpen(true)} disabled={previewCount === 0}>
             <span className="mat-icon">auto_awesome</span> Generate {bulan}/{tahun}

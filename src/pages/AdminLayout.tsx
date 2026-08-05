@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
+import { usePwaInstall } from '../lib/pwa'
+import { showToast } from '../lib/toast'
 import { ROLE_LABEL } from '../lib/types'
 import type { Role } from '../lib/types'
 
@@ -30,6 +32,17 @@ export default function AdminLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { canInstall, promptInstall } = usePwaInstall()
+  const [bannerHidden, setBannerHidden] = useState(() => sessionStorage.getItem('rk_pwa_hide') === '1')
+
+  const doInstall = async () => {
+    const ok = await promptInstall()
+    if (ok) showToast('RumahKita terpasang 🎉', 'success')
+  }
+  const hideBanner = () => {
+    setBannerHidden(true)
+    sessionStorage.setItem('rk_pwa_hide', '1')
+  }
 
   const items = useMemo(
     () => ALL_ITEMS.filter((it) => profile && (profile.role === 'super_admin' || it.roles.includes(profile.role))),
@@ -55,6 +68,24 @@ export default function AdminLayout() {
       </header>
 
       <main className="tab-content">
+        {!bannerHidden && canInstall && (
+          <div
+            style={{
+              background: 'var(--primary)', color: '#fff', borderRadius: 12,
+              padding: '10px 14px', marginBottom: 12,
+              display: 'flex', alignItems: 'center', gap: 10,
+            }}
+          >
+            <span className="mat-icon" style={{ fontSize: 20 }}>phone_iphone</span>
+            <div style={{ flex: 1, fontSize: '0.78rem', fontWeight: 600 }}>Pasang RumahKita di layar utama — buka langsung seperti aplikasi.</div>
+            <button className="btn btn-sm" style={{ background: '#fff', color: 'var(--primary)', minHeight: 30 }} onClick={doInstall}>
+              Pasang
+            </button>
+            <button className="btn btn-sm" style={{ minHeight: 30, color: '#fff' }} onClick={hideBanner}>
+              ✕
+            </button>
+          </div>
+        )}
         {profile && !profile.aktif && (
           <div
             style={{
@@ -105,6 +136,12 @@ export default function AdminLayout() {
           ))}
         </nav>
         <div className="sidebar-footer">
+          {canInstall && (
+            <button className="nav-item" onClick={doInstall}>
+              <span className="mat-icon">phone_iphone</span>
+              <span>Pasang Aplikasi</span>
+            </button>
+          )}
           <button className="nav-item danger" onClick={handleLogout}>
             <span className="mat-icon">logout</span>
             <span>Keluar</span>
