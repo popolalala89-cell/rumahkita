@@ -7,8 +7,11 @@ interface AuthState {
   user: { id: string; email: string } | null
   profile: Profile | null
   perumahan: Perumahan | null
+  isRecovery: boolean
   login: (email: string, password: string) => Promise<{ error: string | null }>
   daftar: (email: string, password: string, nama: string, noHp: string, kode: string) => Promise<{ error: string | null; butuhKonfirmasi?: boolean }>
+  resetPassword: (email: string) => Promise<{ error: string | null }>
+  updatePassword: (password: string) => Promise<{ error: string | null }>
   logout: () => Promise<void>
   hasRole: (...roles: Role[]) => boolean
 }
@@ -36,9 +39,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<{ id: string; email: string } | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [perumahan, setPerumahan] = useState<Perumahan | null>(null)
+  const [isRecovery, setIsRecovery] = useState(false)
 
   useEffect(() => {
     let alive = true
+    // deteksi link reset password (type=recovery) sebelum supabase-js membersihkan hash URL
+    if (window.location.hash.includes('type=recovery')) setIsRecovery(true)
     supabase.auth.getSession().then(({ data }) => {
       if (!alive) return
       const u = data.session?.user ?? null
@@ -55,9 +61,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     })
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       const u = session?.user ?? null
       setUser(u ? { id: u.id, email: u.email ?? '' } : null)
+      if (event === 'PASSWORD_RECOVERY') setIsRecovery(true)
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') setIsRecovery(false)
       if (u) {
         loadProfile(u.id).then(({ profile: p, perumahan: pr }) => {
           if (!alive) return
@@ -99,13 +107,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut()
   }
 
+  // URL akar aplikasi (biar link reset diarahkan ke app, bukan localhost:3000)
+  const appUrl = () => {
+    const segs = window.location.pathname.split('/').filter(Boolean)
+    const known = ['masuk', 'daftar', 'reset-password', 'app']
+    if (segs.length && known.includes(segs[segs.length - 1])) segs.pop()
+    return window.location.origin + '/' + segs.join('/') + '/'
+  }
+
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: appUrl() })
+    return { error: error ? error.message : null }
+  }
+
+  const updatePassword = async (password: string) => {
+    const { error } = await supabase.auth.updateUser({ password })
+    return { error: error ? error.message : null }
+  }
+
   const hasRole = (...roles: Role[]) => {
     if (profile?.role === 'super_admin') return true
     return !!profile && roles.includes(profile.role)
   }
 
   return (
-    <AuthContext.Provider value={{ loading, user, profile, perumahan, login, daftar, logout, hasRole }}>
+    <AuthContext.Provider value={{ loading, user, profile, perumahan, isRecovery, login, daftar, resetPassword, updatePassword, logout, hasRole }}>
       {children}
     </AuthContext.Provider>
   )

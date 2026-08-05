@@ -4,6 +4,7 @@ import { ToastHost } from './lib/toast'
 import EntryScreen from './pages/EntryScreen'
 import Login from './pages/Login'
 import Daftar from './pages/Daftar'
+import ResetPassword from './pages/ResetPassword'
 import AdminLayout from './pages/AdminLayout'
 import Dashboard from './pages/Dashboard'
 import WargaPage from './pages/Warga'
@@ -40,6 +41,9 @@ function PublicOnly({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const { isRecovery } = useAuth()
+  // sesi dari link reset password aktif → paksa tampilkan form password baru
+  if (isRecovery) return <ResetPassword />
   return (
     <>
       <ToastHost />
@@ -47,6 +51,7 @@ export default function App() {
         <Route path="/" element={<PublicOnly><EntryScreen /></PublicOnly>} />
         <Route path="/masuk" element={<PublicOnly><Login /></PublicOnly>} />
         <Route path="/daftar" element={<PublicOnly><Daftar /></PublicOnly>} />
+        <Route path="/reset-password" element={<PublicOnly><ResetPassword /></PublicOnly>} />
         <Route
           path="/app"
           element={

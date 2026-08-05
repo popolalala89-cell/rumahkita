@@ -64,6 +64,8 @@ export default function Login() {
           {busy ? '⏳ Masuk...' : 'Masuk'}
         </button>
         <div className="auth-links">
+          <Link to="/reset-password">Lupa password?</Link>
+          <span style={{ opacity: 0.4, margin: '0 8px' }}>•</span>
           Belum punya akun? <Link to="/daftar">Daftar di sini</Link>
         </div>
       </form>
