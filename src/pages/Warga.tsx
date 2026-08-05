@@ -6,7 +6,9 @@ import ConfirmDialog from '../components/ui/ConfirmDialog'
 import { showToast } from '../lib/toast'
 import type { Rumah, Warga } from '../lib/types'
 
-type Tab = 'rumah' | 'warga'
+type Tab = 'rumah' | 'warga' | 'akun'
+
+type PendingProfil = { id: string; nama: string; no_hp: string | null; rumah_id: string | null; created_at: string }
 
 const STATUS_HUNI: Record<string, string> = { dihuni: 'Dihuni', kosong: 'Kosong', kontrakan: 'Kontrakan' }
 const STATUS_TINGGAL: Record<string, string> = { pemilik: 'Pemilik', penyewa: 'Penyewa', keluarga: 'Keluarga' }
@@ -29,8 +31,16 @@ export default function WargaPage() {
   const [tab, setTab] = useState<Tab>('rumah')
   const [rumah, setRumah] = useState<Rumah[]>([])
   const [warga, setWarga] = useState<Warga[]>([])
+  const [pending, setPending] = useState<PendingProfil[]>([])
   const [search, setSearch] = useState('')
   const [ready, setReady] = useState(false)
+
+  // modal persetujuan akun
+  const [apOpen, setApOpen] = useState(false)
+  const [apTarget, setApTarget] = useState<PendingProfil | null>(null)
+  const [apRumah, setApRumah] = useState('')
+  const [apBusy, setApBusy] = useState(false)
+  const [rejTarget, setRejTarget] = useState<PendingProfil | null>(null)
 
   // modal rumah
   const [rmOpen, setRmOpen] = useState(false)
@@ -56,12 +66,20 @@ export default function WargaPage() {
   const load = useMemo(() => {
     if (!pid) return
     return async () => {
-      const [r, w] = await Promise.all([
+      const [r, w, p] = await Promise.all([
         supabase.from('rumah').select('*').eq('perumahan_id', pid).order('blok').order('nomor'),
         supabase.from('warga').select('*').eq('perumahan_id', pid).order('nama'),
+        supabase
+          .from('profiles')
+          .select('id,nama,no_hp,rumah_id,created_at')
+          .eq('perumahan_id', pid)
+          .eq('aktif', false)
+          .eq('role', 'warga')
+          .order('created_at'),
       ])
       setRumah((r.data ?? []) as Rumah[])
       setWarga((w.data ?? []) as Warga[])
+      setPending((p.data ?? []) as PendingProfil[])
     }
   }, [pid]) as (() => void) | undefined
 
@@ -112,6 +130,21 @@ export default function WargaPage() {
     if (!q) return warga
     return warga.filter((w) => `${w.nama} ${w.nik} ${w.no_hp} ${rumahLabel(w.rumah_id)}`.toLowerCase().includes(q))
   }, [warga, search, rumahLabel])
+
+  const pendingFiltered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return pending
+    return pending.filter((p) => `${p.nama} ${p.no_hp ?? ''}`.toLowerCase().includes(q))
+  }, [pending, search])
+
+  const fmtDateTime = (iso: string) => {
+    try {
+      const d = new Date(iso)
+      return d.toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    } catch {
+      return iso
+    }
+  }
 
   // ── Rumah ──────────────────────────────────────────────
   const openRumahModal = (item?: Rumah) => {
@@ -275,6 +308,56 @@ export default function WargaPage() {
     }
   }
 
+  const reload = async () => {
+    setReady(false)
+    if (load) {
+      await load()
+      setReady(true)
+    }
+  }
+
+  // ── persetujuan akun ─────────────────────────────────
+  const approve = async () => {
+    if (!apTarget) return
+    setApBusy(true)
+    try {
+      const { data, error } = await supabase.rpc('setujui_warga', {
+        v_target: apTarget.id,
+        v_aktif: true,
+        v_rumah_id: apRumah || null,
+      })
+      if (error) throw error
+      const res = data as { ok?: boolean; error?: string } | null
+      if (res && res.ok === false) throw new Error(res.error || 'Gagal menyetujui')
+      showToast(`Akun ${apTarget.nama} disetujui`, 'success')
+      setApOpen(false)
+      setApTarget(null)
+      await reload()
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Gagal menyetujui akun', 'danger')
+    } finally {
+      setApBusy(false)
+    }
+  }
+
+  const tolakAkun = async () => {
+    if (!rejTarget) return
+    setDelBusy(true)
+    try {
+      const { data, error } = await supabase.rpc('tolak_warga', { v_target: rejTarget.id })
+      if (error) throw error
+      const res = data as { ok?: boolean; error?: string } | null
+      if (res && res.ok === false) throw new Error(res.error || 'Gagal menolak')
+      showToast(`Permintaan ${rejTarget.nama} ditolak`, 'success')
+      setRejTarget(null)
+      await reload()
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Gagal menolak akun', 'danger')
+    } finally {
+      setDelBusy(false)
+    }
+  }
+
   return (
     <div className="tab-page">
       <div className="chip-row" style={{ gap: 8 }}>
@@ -284,10 +367,17 @@ export default function WargaPage() {
         <button className={`chip${tab === 'warga' ? ' active' : ''}`} onClick={() => setTab('warga')}>
           👥 Warga · {warga.length}
         </button>
+        <button className={`chip${tab === 'akun' ? ' active' : ''}`} onClick={() => setTab('akun')}>
+          🕒 Akun {pending.length > 0 ? `· ${pending.length}` : ''}
+        </button>
       </div>
 
       <div className="search-wrap">
-        <input placeholder={tab === 'rumah' ? 'Cari rumah… (blok, nomor, tipe)' : 'Cari warga…'} value={search} onChange={(e) => setSearch(e.target.value)} />
+        <input
+          placeholder={tab === 'rumah' ? 'Cari rumah… (blok, nomor, tipe)' : tab === 'akun' ? 'Cari akun warga… (nama, no. HP)' : 'Cari warga…'}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </div>
 
       {!ready ? (
@@ -339,7 +429,7 @@ export default function WargaPage() {
             ))
           )}
         </>
-      ) : (
+      ) : tab === 'warga' ? (
         <>
           <div className="row-actions">
             <button className="btn btn-primary btn-block" onClick={() => openWargaModal()}>
@@ -380,6 +470,52 @@ export default function WargaPage() {
                     </button>
                     <button className="btn btn-sm btn-danger" onClick={() => setConfirm({ jenis: 'warga', id: w.id, nama: w.nama })}>
                       Hapus
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </>
+      ) : (
+        <>
+          {pendingFiltered.length === 0 ? (
+            <div className="card">
+              <div className="empty-state">
+                <span className="mat-icon">verified_user</span>
+                <p>{search ? 'Tidak ada hasil.' : 'Tidak ada akun warga yang menunggu persetujuan.'}</p>
+              </div>
+            </div>
+          ) : (
+            pendingFiltered.map((p) => (
+              <div className="card" key={p.id}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {p.nama}
+                      <span className="badge badge-amber">Menunggu</span>
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>
+                      {p.no_hp || '—'}
+                      {p.rumah_id ? ` · 🏠 ${rumahLabel(p.rumah_id)}` : ''}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                      Mendaftar {fmtDateTime(p.created_at)}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, flexDirection: 'column' }}>
+                    <button
+                      className="btn btn-sm btn-primary"
+                      onClick={() => {
+                        setApTarget(p)
+                        setApRumah(p.rumah_id ?? '')
+                        setApOpen(true)
+                      }}
+                    >
+                      Terima
+                    </button>
+                    <button className="btn btn-sm btn-danger" onClick={() => setRejTarget(p)}>
+                      Tolak
                     </button>
                   </div>
                 </div>
@@ -532,6 +668,48 @@ export default function WargaPage() {
         }
         loading={delBusy}
         onConfirm={doHapus}
+      />
+
+      {/* modal terima akun */}
+      <Modal
+        open={apOpen}
+        onClose={() => setApOpen(false)}
+        title={`Setujui ${apTarget?.nama ?? 'warga'}`}
+        footer={
+          <>
+            <button className="btn btn-outline" onClick={() => setApOpen(false)}>
+              Batal
+            </button>
+            <button className="btn btn-primary" onClick={approve} disabled={apBusy}>
+              {apBusy ? '⏳' : 'Terima & Aktifkan'}
+            </button>
+          </>
+        }
+      >
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: 14 }}>
+          Akun akan aktif dan bisa masuk ke RumahKita. Pilih rumah tempat tinggalnya (opsional).
+        </p>
+        <div className="form-group">
+          <label className="form-label">Rumah</label>
+          <select className="form-control" value={apRumah} onChange={(e) => setApRumah(e.target.value)}>
+            <option value="">— Belum ada rumah —</option>
+            {rumahSorted.map((r) => (
+              <option key={r.id} value={r.id}>
+                Blok {r.blok} No {r.nomor}
+              </option>
+            ))}
+          </select>
+        </div>
+      </Modal>
+
+      {/* konfirmasi tolak akun */}
+      <ConfirmDialog
+        open={!!rejTarget}
+        onClose={() => setRejTarget(null)}
+        title="Tolak permintaan?"
+        message={`Tolak pendaftaran \"${rejTarget?.nama}\"? Akun tidak bisa masuk ke RumahKita.`}
+        loading={delBusy}
+        onConfirm={tolakAkun}
       />
     </div>
   )
