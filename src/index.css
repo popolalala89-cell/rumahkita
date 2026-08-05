@@ -308,6 +308,21 @@ textarea.form-control { min-height: 84px; resize: vertical; }
 .badge-amber { background: #fef3c7; color: #b45309; }
 .badge-blue { background: #dbeafe; color: #1d4ed8; }
 .badge-gray { background: var(--surface-variant); color: var(--text-secondary); }
+
+/* ── Polling vote ─────────────────────────────────── */
+.vote-option {
+  width: 100%; display: block; margin-bottom: 8px;
+  border: 1.5px solid var(--border); border-radius: 12px;
+  background: var(--surface); overflow: hidden; text-align: left;
+}
+.vote-option .vote-top {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px; font-size: 0.82rem; font-weight: 600;
+}
+.vote-option .vote-bar { height: 4px; background: var(--surface-variant); }
+.vote-option .vote-bar > div { height: 100%; background: var(--primary); transition: width 0.2s ease; }
+.vote-option.selected { border-color: var(--primary); background: var(--primary-light); }
+.vote-option:not(:disabled):active { background: var(--surface-variant); }
 .list-item {
   display: flex; align-items: center; gap: 12px;
   padding: 12px 4px; border-bottom: 1px solid var(--border);

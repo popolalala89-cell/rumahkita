@@ -95,6 +95,45 @@ export interface KasTransaksi {
   created_at: string
 }
 
+export interface Kegiatan {
+  id: string
+  perumahan_id: string
+  nama: string
+  tgl: string | null
+  lokasi: string
+  deskripsi: string
+}
+
+export interface Polling {
+  id: string
+  perumahan_id: string
+  judul: string
+  opsi_json: string
+  tgl_mulai: string | null
+  tgl_selesai: string | null
+  aktif: boolean
+}
+
+export interface PollingSuara {
+  id: string
+  perumahan_id: string
+  polling_id: string
+  rumah_id: string | null
+  opsi: string
+  created_at: string
+}
+
+export interface DirektoriUsaha {
+  id: string
+  perumahan_id: string
+  warga_id: string | null
+  nama_usaha: string
+  kategori: string
+  no_hp: string
+  deskripsi: string
+  foto_url: string | null
+}
+
 export interface Pengumuman {
   id: string
   perumahan_id: string

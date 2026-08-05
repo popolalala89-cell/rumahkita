@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard'
 import WargaPage from './pages/Warga'
 import IuranPage from './pages/Iuran'
 import KasPage from './pages/Kas'
+import KomunitasPage from './pages/Komunitas'
 import Placeholder from './pages/Placeholder'
 
 function Loading() {
@@ -54,6 +55,7 @@ export default function App() {
           <Route path="warga" element={<WargaPage />} />
           <Route path="iuran" element={<IuranPage />} />
           <Route path="kas" element={<KasPage />} />
+          <Route path="komunitas" element={<KomunitasPage />} />
           <Route path="*" element={<Placeholder />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
