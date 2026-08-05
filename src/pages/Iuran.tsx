@@ -130,6 +130,14 @@ export default function IuranPage() {
     }
     setJBusy(true)
     try {
+      // cegah duplikat nama jenis (case-insensitive)
+      if (!jEdit) {
+        const ada = jenis.some((x) => x.nama.trim().toLowerCase() === jForm.nama.trim().toLowerCase())
+        if (ada) {
+          showToast('Jenis iuran dengan nama itu sudah ada', 'warning')
+          return
+        }
+      }
       const payload = { nama: jForm.nama.trim(), nominal, aktif: jForm.aktif, perumahan_id: pid }
       let error: unknown = null
       if (jEdit) {

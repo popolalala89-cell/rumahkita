@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { supabase } from './supabase'
+import { APP_BASE } from './config'
 import type { Profile, Perumahan, Role } from './types'
 
 interface AuthState {
@@ -116,12 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   // URL akar aplikasi (biar link reset diarahkan ke app, bukan localhost:3000)
-  const appUrl = () => {
-    const segs = window.location.pathname.split('/').filter(Boolean)
-    const known = ['masuk', 'daftar', 'reset-password', 'app']
-    if (segs.length && known.includes(segs[segs.length - 1])) segs.pop()
-    return window.location.origin + '/' + segs.join('/') + '/'
-  }
+  const appUrl = () => window.location.origin + APP_BASE + '/'
 
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: appUrl() })

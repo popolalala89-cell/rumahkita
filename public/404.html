@@ -4,14 +4,10 @@
     <meta charset="UTF-8" />
     <title>RumahKita</title>
     <script>
+      // GitHub Pages SPA fallback: simpan path yang diminta, lalu muat ulang app.
       ;(function () {
-        var r = sessionStorage.getItem('redirect')
-        if (r) {
-          sessionStorage.removeItem('redirect')
-          location.replace(r)
-        } else {
-          location.replace('/')
-        }
+        sessionStorage.setItem('redirect', location.pathname + location.search)
+        location.replace('/rumahkita/')
       })()
     </script>
   </head>

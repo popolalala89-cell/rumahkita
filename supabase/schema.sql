@@ -74,7 +74,8 @@ create table if not exists iuran_jenis (
   nominal bigint not null default 0,
   periode text not null default 'bulanan',
   aktif boolean not null default true,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  unique (perumahan_id, nama)
 );
 
 -- ── Tagihan (di-generate per rumah × jenis × bulan) ─────────

@@ -29,7 +29,7 @@ insert into iuran_jenis (perumahan_id, nama, nominal, periode)
 values
   ('10000000-0000-4000-8000-000000000001', 'Iuran Sampah', 30000, 'bulanan'),
   ('10000000-0000-4000-8000-000000000001', 'Infaq', 10000, 'bulanan')
-on conflict do nothing;
+on conflict (perumahan_id, nama) do nothing;
 
 -- ── Data warga Pa (rumah B.3) ───────────────────────────────
 insert into warga (perumahan_id, rumah_id, nama, status_tinggal, aktif)

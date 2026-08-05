@@ -1,12 +1,13 @@
 /* RumahKita — Service Worker (PWA)
    Strategi:
-   - Install: precache shell (index.html).
-   - Navigasi SPA: network-first, fallback ke index.html (offline tetap jalan di dalam app).
+   - Install: precache shell (index.html di subpath /rumahkita/).
+   - Navigasi SPA: network-first; kalau server jawab 404 (route SPA) atau offline,
+     pakai shell dari cache. Browser URL tetap di path yang diminta.
    - Aset same-origin (has = immutable): cache-first, isi cache saat pertama diambil.
 */
 'use strict'
-const CACHE = 'rumahkita-v1'
-const SHELL = ['/', '/index.html']
+const CACHE = 'rumahkita-v2'
+const SHELL = ['/rumahkita/index.html', '/rumahkita/manifest.webmanifest']
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
@@ -29,10 +30,14 @@ self.addEventListener('fetch', (e) => {
   if (request.method !== 'GET') return
   const url = new URL(request.url)
 
-  // Navigasi halaman (termasuk route /app/...): network first, fallback shell
+  // Navigasi halaman (termasuk route /rumahkita/app/...): network first,
+  // 404 server (route SPA) & offline → shell dari cache
   if (request.mode === 'navigate') {
     e.respondWith(
-      fetch(request).catch(() => caches.match('/index.html'))
+      fetch(request).then((res) => {
+        if (res.ok) return res
+        return caches.match('/rumahkita/index.html').then((hit) => hit || fetch('/rumahkita/index.html'))
+      }).catch(() => caches.match('/rumahkita/index.html'))
     )
     return
   }
@@ -48,7 +53,7 @@ self.addEventListener('fetch', (e) => {
             caches.open(CACHE).then((c) => c.put(request, clone))
           }
           return res
-        }).catch(() => caches.match('/index.html'))
+        }).catch(() => caches.match('/rumahkita/index.html'))
       )
     )
   }
