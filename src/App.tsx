@@ -18,6 +18,8 @@ import AsetPage from './pages/Aset'
 import DokumenPage from './pages/Dokumen'
 import PengaturanPage from './pages/Pengaturan'
 import KelolaPerumahanPage from './pages/KelolaPerumahan'
+import LanggananPage from './pages/Langganan'
+import PermintaanPage from './pages/Permintaan'
 import Placeholder from './pages/Placeholder'
 
 function Loading() {
@@ -74,6 +76,8 @@ export default function App() {
           <Route path="aset" element={<AsetPage />} />
           <Route path="dokumen" element={<DokumenPage />} />
           <Route path="pengaturan" element={<PengaturanPage />} />
+          <Route path="langganan" element={<LanggananPage />} />
+          <Route path="permintaan" element={<PermintaanPage />} />
           <Route path="kelola" element={<KelolaPerumahanPage />} />
           <Route path="*" element={<Placeholder />} />
         </Route>

@@ -84,6 +84,22 @@ export interface Pembayaran {
   created_at: string
 }
 
+export interface PermintaanLangganan {
+  id: string
+  perumahan_id: string
+  pemohon_id: string
+  bukti_url: string | null
+  catatan: string | null
+  status: 'menunggu' | 'diterima' | 'ditolak'
+  dibuat_pada: string
+  ditinjau_pada: string | null
+}
+
+export interface PermintaanLanggananRow extends PermintaanLangganan {
+  perumahan?: { nama?: string; kode_undangan?: string } | null
+  profiles?: { nama?: string } | null
+}
+
 export interface KasTransaksi {
   id: string
   perumahan_id: string
