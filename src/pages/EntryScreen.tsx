@@ -18,6 +18,10 @@ export default function EntryScreen() {
         <Link to="/daftar" className="btn btn-outline btn-block" style={{ justifyContent: 'center' }}>
           <span className="mat-icon">person_add</span> Daftar Warga Baru
         </Link>
+        <div style={{ height: 10 }} />
+        <Link to="/mulai" className="btn btn-outline btn-block" style={{ justifyContent: 'center' }}>
+          <span className="mat-icon">apartment</span> Untuk Perumahan Baru — Mulai di Sini
+        </Link>
         <div className="auth-links">
           Butuh bantuan? Hubungi pengurus perumahan Anda.
         </div>

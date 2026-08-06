@@ -5,6 +5,7 @@ import EntryScreen from './pages/EntryScreen'
 import Login from './pages/Login'
 import Daftar from './pages/Daftar'
 import ResetPassword from './pages/ResetPassword'
+import MulaiPage from './pages/Mulai'
 import AdminLayout from './pages/AdminLayout'
 import Dashboard from './pages/Dashboard'
 import WargaPage from './pages/Warga'
@@ -54,6 +55,7 @@ export default function App() {
         <Route path="/masuk" element={<PublicOnly><Login /></PublicOnly>} />
         <Route path="/daftar" element={<PublicOnly><Daftar /></PublicOnly>} />
         <Route path="/reset-password" element={<PublicOnly><ResetPassword /></PublicOnly>} />
+        <Route path="/mulai" element={<MulaiPage />} />
         <Route
           path="/app"
           element={
