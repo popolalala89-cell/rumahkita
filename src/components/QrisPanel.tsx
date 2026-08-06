@@ -114,7 +114,6 @@ export function QrisAdminCard() {
       <input
         type="file"
         accept="image/*"
-        capture="environment"
         className="form-control"
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
       />
