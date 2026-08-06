@@ -183,7 +183,8 @@ a { color: var(--primary); text-decoration: none; }
   .sidebar-overlay { display: none; }
   .hamburger { display: none !important; }
   .bottom-nav { display: none; }
-  .tab-content { padding-bottom: var(--space-xl); }
+  .top-app-bar { margin-left: var(--sidebar-width); }
+  .tab-content { margin-left: var(--sidebar-width); padding-bottom: var(--space-xl); }
   .admin-content {
     margin-left: var(--sidebar-width);
     padding-bottom: var(--space-xl);
