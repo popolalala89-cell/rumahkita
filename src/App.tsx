@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './lib/auth'
 import { ToastHost } from './lib/toast'
-import EntryScreen from './pages/EntryScreen'
+import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Daftar from './pages/Daftar'
 import ResetPassword from './pages/ResetPassword'
@@ -53,7 +53,7 @@ export default function App() {
     <>
       <ToastHost />
       <Routes>
-        <Route path="/" element={<PublicOnly><EntryScreen /></PublicOnly>} />
+        <Route path="/" element={<PublicOnly><Landing /></PublicOnly>} />
         <Route path="/masuk" element={<PublicOnly><Login /></PublicOnly>} />
         <Route path="/daftar" element={<PublicOnly><Daftar /></PublicOnly>} />
         <Route path="/reset-password" element={<PublicOnly><ResetPassword /></PublicOnly>} />
