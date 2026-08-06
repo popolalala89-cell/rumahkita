@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { formatRp } from '../lib/format'
 import type { PaketLangganan } from '../lib/types'
-import './landing.css'
+import '../landing.css'
 
 const FITUR = [
   { icon: 'savings', judul: 'Iuran & Kas Digital', teks: 'Catat iuran bulanan, tunggakan, dan kas perumahan rapi otomatis. Tidak ada lagi buku catatan berserakan.' },
