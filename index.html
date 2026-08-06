@@ -19,15 +19,21 @@
     />
     <title>RumahKita — Manajemen Perumahan</title>
     <script>
-      // Penjaga boot: kalau app belum hidup (window.__rkBoot=true) dalam 6 dtk —
-      // mis. service worker lama menyajikan shell basi — paksa muat ulang dari
-      // halaman depan supaya tidak blank putih.
+      // Penjaga boot: kalau app belum hidup (window.__rkBoot=true) dalam 5 dtk —
+      // mis. service worker lama masih menyajikan shell yang bundle-nya sudah
+      // tak ada di server — simpan halaman yang sedang dibuka, lalu muat ulang
+      // dari halaman depan. main.tsx akan otomatis balik ke halaman tadi
+      // (bukan beranda).
       window.__rkBoot = false
       setTimeout(function () {
-        if (!window.__rkBoot) {
-          location.replace('/rumahkita/?rk=1')
-        }
-      }, 6000)
+        if (window.__rkBoot) return
+        try {
+          if (!sessionStorage.getItem('redirect')) {
+            sessionStorage.setItem('redirect', location.pathname + location.search)
+          }
+        } catch (e) {}
+        location.replace('/rumahkita/?rk=' + Math.random().toString(16).slice(2))
+      }, 5000)
     </script>
   </head>
   <body>
