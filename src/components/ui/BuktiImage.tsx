@@ -1,8 +1,18 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
-// Menampilkan gambar bukti dari storage private lewat link sementara (1 jam)
-export default function BuktiImage({ path, alt, maxHeight = 180 }: { path: string | null; alt?: string; maxHeight?: number }) {
+// Menampilkan gambar dari storage private lewat link sementara (1 jam)
+export default function BuktiImage({
+  path,
+  alt,
+  maxHeight = 180,
+  bucket = 'bukti-langganan',
+}: {
+  path: string | null
+  alt?: string
+  maxHeight?: number
+  bucket?: string
+}) {
   const [url, setUrl] = useState<string | null>(null)
 
   useEffect(() => {
@@ -13,7 +23,7 @@ export default function BuktiImage({ path, alt, maxHeight = 180 }: { path: strin
     }
     setUrl(null)
     supabase.storage
-      .from('bukti-langganan')
+      .from(bucket)
       .createSignedUrl(path, 3600)
       .then(({ data }) => {
         if (alive && data?.signedUrl) setUrl(data.signedUrl)
@@ -22,14 +32,14 @@ export default function BuktiImage({ path, alt, maxHeight = 180 }: { path: strin
     return () => {
       alive = false
     }
-  }, [path])
+  }, [path, bucket])
 
-  if (!path) return <span className="li-sub">(tanpa bukti)</span>
+  if (!path) return <span className="li-sub">(tanpa gambar)</span>
   if (!url) return <span className="li-sub">memuat…</span>
   return (
     <img
       src={url}
-      alt={alt || 'bukti'}
+      alt={alt || 'gambar'}
       style={{ width: '100%', maxHeight, objectFit: 'cover', borderRadius: 10, background: '#fff' }}
     />
   )

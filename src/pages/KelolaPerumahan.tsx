@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../lib/auth'
 import { supabase } from '../lib/supabase'
 import { showToast } from '../lib/toast'
+import { QrisAdminCard } from '../components/QrisPanel'
 import type { Perumahan, Profile, Role } from '../lib/types'
 
 const ROLE_LABEL: Record<string, string> = {
@@ -182,6 +183,8 @@ export default function KelolaPerumahanPage() {
           </button>
         </div>
       </div>
+
+      <QrisAdminCard />
 
       {!ready ? (
         <div className="loading-screen" style={{ minHeight: '30dvh' }}>

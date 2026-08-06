@@ -4,6 +4,7 @@ import { useAuth } from '../lib/auth'
 import { showToast } from '../lib/toast'
 import Modal from '../components/ui/Modal'
 import BuktiImage from '../components/ui/BuktiImage'
+import { QrisView } from '../components/QrisPanel'
 import type { PermintaanLangganan } from '../lib/types'
 
 export default function LanggananPage() {
@@ -80,6 +81,7 @@ export default function LanggananPage() {
 
   return (
     <div>
+      <QrisView />
       <div className="page-card">
         <div className="card-title">
           <span className="mat-icon">card_membership</span> Langganan Perumahan
