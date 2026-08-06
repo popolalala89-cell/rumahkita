@@ -36,7 +36,7 @@ export function QrisView() {
       <p className="li-sub" style={{ marginBottom: 8, lineHeight: 1.5 }}>
         Scan QRIS di bawah lalu transfer, kemudian kembali ke menu Langganan dan unggah bukti transfer.
       </p>
-      <BuktiImage path={row.gambar_url} bucket="qris-platform" maxHeight={220} alt="QRIS pembayaran" />
+      <BuktiImage path={row.gambar_url} bucket="qris-platform" maxHeight={340} alt="QRIS pembayaran" />
       {row.keterangan ? (
         <p className="li-sub" style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>
           {row.keterangan}

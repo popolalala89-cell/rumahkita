@@ -37,10 +37,12 @@ export default function BuktiImage({
   if (!path) return <span className="li-sub">(tanpa gambar)</span>
   if (!url) return <span className="li-sub">memuat…</span>
   return (
-    <img
-      src={url}
-      alt={alt || 'gambar'}
-      style={{ width: '100%', maxHeight, objectFit: 'cover', borderRadius: 10, background: '#fff' }}
-    />
+    <div style={{ background: '#fff', borderRadius: 10, overflow: 'hidden', display: 'flex', justifyContent: 'center' }}>
+      <img
+        src={url}
+        alt={alt || 'gambar'}
+        style={{ width: '100%', maxHeight, objectFit: 'contain', borderRadius: 10, background: '#fff' }}
+      />
+    </div>
   )
 }
