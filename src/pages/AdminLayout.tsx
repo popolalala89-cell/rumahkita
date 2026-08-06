@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { usePwaInstall } from '../lib/pwa'
@@ -35,6 +35,23 @@ export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { canInstall, promptInstall } = usePwaInstall()
   const [bannerHidden, setBannerHidden] = useState(() => sessionStorage.getItem('rk_pwa_hide') === '1')
+
+  // white label: terapkan warna tema & judul tab sesuai perumahan
+  useEffect(() => {
+    const r = document.documentElement
+    if (perumahan?.warna) {
+      r.style.setProperty('--primary', perumahan.warna)
+      r.style.setProperty('--primary-dark', perumahan.warna)
+      r.style.setProperty('--primary-light', `color-mix(in srgb, ${perumahan.warna} 14%, white)`)
+    }
+    document.title = perumahan ? `${perumahan.nama} · RumahKita` : 'RumahKita'
+    return () => {
+      r.style.removeProperty('--primary')
+      r.style.removeProperty('--primary-dark')
+      r.style.removeProperty('--primary-light')
+      document.title = 'RumahKita'
+    }
+  }, [perumahan?.warna, perumahan?.nama])
 
   const doInstall = async () => {
     const ok = await promptInstall()
@@ -161,7 +178,12 @@ export default function AdminLayout() {
       <aside className={`admin-sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="sidebar-header">
           <div className="brand">
-            <span>🏘️</span> RumahKita
+            {perumahan?.logo_url ? (
+              <img src={perumahan.logo_url} alt="" style={{ height: 22, width: 22, objectFit: 'contain', borderRadius: 4 }} />
+            ) : (
+              <span style={{ lineHeight: 1 }}>🏘️</span>
+            )}
+            <span>{perumahan?.nama ?? 'RumahKita'}</span>
           </div>
           <div className="brand-sub">{perumahan?.nama ?? '—'} · {profile ? ROLE_LABEL[profile.role] : ''}</div>
         </div>

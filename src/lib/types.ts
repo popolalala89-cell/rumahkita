@@ -19,6 +19,7 @@ export interface Perumahan {
   logo_url: string | null
   aktif: boolean
   langganan_hingga: string | null
+  warna: string | null
   created_at: string
 }
 

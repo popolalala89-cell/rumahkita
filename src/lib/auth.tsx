@@ -15,6 +15,7 @@ interface AuthState {
   updatePassword: (password: string) => Promise<{ error: string | null }>
   logout: () => Promise<void>
   hasRole: (...roles: Role[]) => boolean
+  refreshProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthState>(null as unknown as AuthState)
@@ -134,8 +135,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return !!profile && roles.includes(profile.role)
   }
 
+  const refreshProfile = async () => {
+    if (!user) return
+    const { profile: p, perumahan: pr } = await loadProfile(user.id)
+    setProfile(p)
+    setPerumahan(pr)
+  }
+
   return (
-    <AuthContext.Provider value={{ loading, user, profile, perumahan, isRecovery, login, daftar, resetPassword, updatePassword, logout, hasRole }}>
+    <AuthContext.Provider value={{ loading, user, profile, perumahan, isRecovery, login, daftar, resetPassword, updatePassword, logout, hasRole, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   )

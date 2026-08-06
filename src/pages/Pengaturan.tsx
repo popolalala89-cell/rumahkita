@@ -15,13 +15,17 @@ const ROLE_LABEL: Record<string, string> = {
 const ROLE_EDITABLE: Role[] = ['warga', 'sekretaris', 'bendahara', 'ketua', 'satpam']
 
 export default function PengaturanPage() {
-  const { profile, perumahan } = useAuth()
+  const { profile, perumahan, refreshProfile } = useAuth()
   const pid = profile?.perumahan_id
 
   const [nama, setNama] = useState('')
   const [alamat, setAlamat] = useState('')
+  const [warna, setWarna] = useState('')
+  const [logo, setLogo] = useState('')
   const [savBusy, setSavBusy] = useState(false)
   const [copied, setCopied] = useState(false)
+
+  const WARNA_PRESET = ['#034BB9', '#0B7A3E', '#B4340F', '#7A0BB6', '#B60B6E', '#0F8BB4', '#B78A0B', '#333333']
 
   const [akun, setAkun] = useState<Profile[]>([])
   const [ready, setReady] = useState(false)
@@ -33,6 +37,8 @@ export default function PengaturanPage() {
     if (perumahan) {
       setNama(perumahan.nama)
       setAlamat(perumahan.alamat ?? '')
+      setWarna(perumahan.warna ?? '')
+      setLogo(perumahan.logo_url ?? '')
     }
   }, [perumahan])
 
@@ -63,9 +69,13 @@ export default function PengaturanPage() {
     }
     setSavBusy(true)
     try {
-      const { error } = await supabase.from('perumahan').update({ nama: nama.trim(), alamat: alamat.trim() }).eq('id', pid)
+      const { error } = await supabase
+        .from('perumahan')
+        .update({ nama: nama.trim(), alamat: alamat.trim(), warna: warna || null, logo_url: logo.trim() || null })
+        .eq('id', pid)
       if (error) throw error
-      showToast('Info perumahan disimpan', 'success')
+      await refreshProfile()
+      showToast('Info perumahan disimpan 🎨', 'success')
     } catch {
       showToast('Gagal menyimpan (izin terbatas untuk pengelola)', 'danger')
     } finally {
@@ -164,6 +174,56 @@ export default function PengaturanPage() {
         <div className="form-group">
           <label className="form-label">Alamat</label>
           <input className="form-control" value={alamat} onChange={(e) => setAlamat(e.target.value)} />
+        </div>
+        <div style={{ marginTop: 10 }}>
+          <label className="form-label">Warna Tema</label>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            {WARNA_PRESET.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setWarna(c)}
+                style={{
+                  width: 34, height: 34, borderRadius: 10, padding: 0, cursor: 'pointer',
+                  border: warna === c ? '3px solid var(--text)' : '2px solid var(--border)', background: c,
+                }}
+                aria-label={`Warna ${c}`}
+              />
+            ))}
+            <label
+              style={{
+                position: 'relative', width: 34, height: 34, borderRadius: 10, overflow: 'hidden',
+                cursor: 'pointer', border: '2px dashed var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <span style={{ fontSize: 15 }}>🎨</span>
+              <input
+                type="color"
+                value={warna || '#034BB9'}
+                onChange={(e) => setWarna(e.target.value)}
+                style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
+              />
+            </label>
+          </div>
+        </div>
+        <div className="form-group" style={{ marginTop: 8 }}>
+          <label className="form-label">Logo (opsional) — tempel link gambar</label>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input
+              className="form-control"
+              value={logo}
+              onChange={(e) => setLogo(e.target.value)}
+              placeholder="https://…/logo.png"
+            />
+            {logo && (
+              <img
+                src={logo}
+                alt=""
+                style={{ height: 34, width: 34, objectFit: 'contain', borderRadius: 8, background: 'var(--surface-variant)', flexShrink: 0 }}
+                onError={(e) => ((e.target as HTMLImageElement).style.opacity = '0.25')}
+              />
+            )}
+          </div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 4 }}>
           <label className="form-label" style={{ margin: 0 }}>
