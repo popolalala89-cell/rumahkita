@@ -101,20 +101,25 @@ export default function MulaiPage() {
 
         {effective === 'akun' && (
           <>
+            <div className="form-group" style={{ background: 'var(--surface-alt, #f5f7fa)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 12px', marginBottom: 12 }}>
+              <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.45 }}>
+                🧑‍💼 Ini pendaftaran akun pengelola baru. Email & password di bawah <b>bebas kamu pilih sendiri</b> — tidak perlu daftar dulu di tempat lain, dan belum perlu berlangganan.
+              </p>
+            </div>
             <div className="form-group">
-              <label className="form-label">Email Pengelola</label>
+              <label className="form-label">Email Pengelola (akun baru)</label>
               <input className="form-control" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nama@email.com" />
             </div>
             <div className="form-group">
-              <label className="form-label">Password</label>
+              <label className="form-label">Password (akun baru)</label>
               <input className="form-control" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Minimal 6 karakter" />
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <Link className="btn btn-outline" to="/masuk" style={{ textDecoration: 'none', textAlign: 'center' }}>
-                Masuk
+                Sudah punya akun? Masuk
               </Link>
               <button className="btn btn-primary" style={{ flex: 1 }} onClick={buatAkun} disabled={busy}>
-                {busy ? '⏳' : 'Lanjut Buat Perumahan'}
+                {busy ? '⏳' : 'Buat Akun & Lanjut'}
               </button>
             </div>
           </>
