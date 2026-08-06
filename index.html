@@ -18,6 +18,17 @@
       rel="stylesheet"
     />
     <title>RumahKita — Manajemen Perumahan</title>
+    <script>
+      // Penjaga boot: kalau app belum hidup (window.__rkBoot=true) dalam 6 dtk —
+      // mis. service worker lama menyajikan shell basi — paksa muat ulang dari
+      // halaman depan supaya tidak blank putih.
+      window.__rkBoot = false
+      setTimeout(function () {
+        if (!window.__rkBoot) {
+          location.replace('/rumahkita/?rk=1')
+        }
+      }, 6000)
+    </script>
   </head>
   <body>
     <div id="root"></div>

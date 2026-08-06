@@ -6,6 +6,9 @@ import App from './App'
 import { AuthProvider } from './lib/auth'
 import { APP_BASE } from './lib/config'
 
+// Tandai app benar-benar hidup (untuk penjaga boot di index.html)
+;(window as any).__rkBoot = true
+
 // GitHub Pages SPA fallback: restore URL yang disimpan 404.html
 ;(function () {
   const redirect = sessionStorage.getItem('redirect')
