@@ -29,10 +29,7 @@ delete from auth.users where email in (
   'rk-lang-1785983931@example.com'
 );
 
--- bukti QRIS yang diunggah saat tes (di bucket bukti-langganan)
-delete from storage.objects
-where bucket_id = 'bukti-langganan'
-  and name like '46f96496-3c3a-4636-902d-b34e82ae50d6/%';
+-- bukti QRIS tes dihapus lewat Storage API (SQL dilarang hapus storage.objects)
 
 -- VERIFIKASI: semuanya harus 0
 select (select count(*) from public.perumahan where id in (
