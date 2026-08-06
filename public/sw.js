@@ -13,7 +13,7 @@
 
 const VERSION = 'v5'
 const CACHE = 'rumahkita-' + VERSION
-const BASE = '/rumahkita'
+const BASE = ''
 const SHELL = [BASE + '/index.html', BASE + '/manifest.webmanifest']
 
 self.addEventListener('install', (e) => {

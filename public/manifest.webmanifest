@@ -3,27 +3,27 @@
   "short_name": "RumahKita",
   "description": "Manajemen perumahan: iuran, tagihan, pengumuman, layanan warga.",
   "lang": "id",
-  "start_url": "/rumahkita/",
-  "scope": "/rumahkita/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#034BB9",
   "theme_color": "#034BB9",
   "icons": [
     {
-      "src": "/rumahkita/icons/app-192.png",
+      "src": "/icons/app-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/rumahkita/icons/app-512.png",
+      "src": "/icons/app-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/rumahkita/icons/app-512.png",
+      "src": "/icons/app-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
