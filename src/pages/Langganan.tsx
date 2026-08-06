@@ -5,13 +5,16 @@ import { showToast } from '../lib/toast'
 import Modal from '../components/ui/Modal'
 import BuktiImage from '../components/ui/BuktiImage'
 import { QrisView } from '../components/QrisPanel'
-import type { PermintaanLangganan } from '../lib/types'
+import { formatRp } from '../lib/format'
+import type { PermintaanLangganan, PaketLangganan } from '../lib/types'
 
 export default function LanggananPage() {
   const { profile, perumahan, hasRole } = useAuth()
   const [list, setList] = useState<PermintaanLangganan[]>([])
+  const [pakets, setPakets] = useState<PaketLangganan[]>([])
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
+  const [pilih, setPilih] = useState<number | null>(null)
   const [file, setFile] = useState<File | null>(null)
   const [catatan, setCatatan] = useState('')
   const [busy, setBusy] = useState(false)
@@ -35,12 +38,28 @@ export default function LanggananPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id])
 
+  useEffect(() => {
+    supabase
+      .from('paket_langganan')
+      .select('*')
+      .eq('aktif', true)
+      .order('harga', { ascending: true })
+      .then(({ data }) => {
+        if (data) setPakets(data as PaketLangganan[])
+      })
+  }, [])
+
   const kirim = async () => {
     if (!profile) return
+    if (!pilih) {
+      showToast('Pilih paket dulu', 'danger')
+      return
+    }
     if (!file) {
       showToast('Unggah bukti transfer dulu', 'danger')
       return
     }
+    const paket = pakets.find((p) => p.id === pilih)
     setBusy(true)
     try {
       const safe = file.name.replace(/[^a-zA-Z0-9._-]+/g, '_')
@@ -55,10 +74,13 @@ export default function LanggananPage() {
         pemohon_id: profile.id,
         bukti_url: up.data.path,
         catatan: catatan.trim() || null,
+        paket_id: pilih,
+        nominal: paket?.harga ?? null,
       })
       if (error) throw error
-      showToast('Permintaan langganan terkirim ✅', 'success')
+      showToast(`Permintaan terkirim ✅ (${paket?.nama ?? ''})`, 'success')
       setOpen(false)
+      setPilih(null)
       setFile(null)
       setCatatan('')
       load()
@@ -94,6 +116,24 @@ export default function LanggananPage() {
           Bayar iuran langganan lewat QRIS ke pengelola, lalu kirim bukti transfer melalui tombol di bawah. Pembayaran
           dicek oleh admin dan mengaktifkan layanan perumahan ini.
         </p>
+        {pakets.length > 0 && (
+          <div style={{ marginTop: 12 }}>
+            <p className="li-sub" style={{ fontWeight: 700, marginBottom: 4 }}>
+              Daftar Paket &amp; Harga
+            </p>
+            {pakets.map((p) => (
+              <div
+                key={p.id}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #eee' }}
+              >
+                <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                  {p.nama} <span className="li-sub">({p.durasi_hari} hari)</span>
+                </span>
+                <b style={{ fontSize: '0.85rem' }}>{formatRp(p.harga)}</b>
+              </div>
+            ))}
+          </div>
+        )}
         {canRequest && (
           <button className="btn btn-primary btn-block" style={{ marginTop: 12 }} onClick={() => setOpen(true)}>
             <span className="mat-icon">upload</span> Berlangganan / Perpanjang
@@ -120,6 +160,12 @@ export default function LanggananPage() {
                   {new Date(r.dibuat_pada).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
+              {r.invoice_no && (
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 700, fontSize: '0.8rem' }}>{r.invoice_no}</span>
+                  {r.nominal != null && <span className="li-sub">{formatRp(r.nominal)}</span>}
+                </div>
+              )}
               {r.catatan && <p className="li-sub" style={{ whiteSpace: 'pre-wrap' }}>{r.catatan}</p>}
               <BuktiImage path={r.bukti_url} />
             </div>
@@ -129,23 +175,51 @@ export default function LanggananPage() {
 
       <Modal
         open={open}
-        onClose={() => setOpen(false)}
-        title="Kirim Bukti Langganan"
+        onClose={() => {
+          setOpen(false)
+          setPilih(null)
+        }}
+        title="Berlangganan / Perpanjang"
         footer={
           <>
-            <button className="btn btn-outline" onClick={() => setOpen(false)} disabled={busy}>
+            <button
+              className="btn btn-outline"
+              onClick={() => {
+                setOpen(false)
+                setPilih(null)
+              }}
+              disabled={busy}
+            >
               Batal
             </button>
             <button className="btn btn-primary" onClick={kirim} disabled={busy}>
-              {busy ? 'Mengirim…' : 'Kirim'}
+              {busy ? 'Mengirim…' : 'Kirim Permintaan'}
             </button>
           </>
         }
       >
         <p className="li-sub" style={{ marginBottom: 12, lineHeight: 1.5 }}>
-          Transfer ke nomor QRIS pengelola, lalu lampirkan <b>screenshot bukti transfer</b>. Admin akan memverifikasi.
+          Transfer ke nomor QRIS pengelola sesuai paket pilihan, lalu lampirkan <b>screenshot bukti transfer</b>. Admin
+          akan memverifikasi.
         </p>
-        <label className="form-label">Bukti transfer (foto)</label>
+        <label className="form-label">Pilih paket</label>
+        {pakets.map((p) => (
+          <label
+            key={p.id}
+            className="list-item"
+            style={{ cursor: 'pointer', gap: 10, marginBottom: 6, border: pilih === p.id ? '1px solid #034BB9' : '1px solid #eee', borderRadius: 10 }}
+          >
+            <input type="radio" name="paket" checked={pilih === p.id} onChange={() => setPilih(p.id)} />
+            <span style={{ flex: 1 }}>
+              <b style={{ fontSize: '0.85rem' }}>{p.nama}</b>{' '}
+              <span className="li-sub">({p.durasi_hari} hari)</span>
+            </span>
+            <b style={{ fontSize: '0.85rem' }}>{formatRp(p.harga)}</b>
+          </label>
+        ))}
+        <label className="form-label" style={{ marginTop: 12 }}>
+          Bukti transfer (foto)
+        </label>
         <input
           type="file"
           accept="image/*"

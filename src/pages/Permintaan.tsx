@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { showToast } from '../lib/toast'
 import BuktiImage from '../components/ui/BuktiImage'
+import { formatRp } from '../lib/format'
 import type { PermintaanLanggananRow } from '../lib/types'
 
 type Tab = 'semua' | 'menunggu' | 'diterima' | 'ditolak'
@@ -22,7 +23,7 @@ export default function PermintaanPage() {
     setLoading(true)
     const { data } = await supabase
       .from('permintaan_langganan')
-      .select('*, perumahan(nama, kode_undangan), profiles(nama)')
+      .select('*, perumahan(nama, kode_undangan), profiles(nama), paket(nama, durasi_hari, harga)')
       .order('dibuat_pada', { ascending: false })
     if (data) setList(data as PermintaanLanggananRow[])
     setLoading(false)
@@ -34,17 +35,39 @@ export default function PermintaanPage() {
 
   const tinjau = async (r: PermintaanLanggananRow, status: 'diterima' | 'ditolak') => {
     setBusy(r.id)
-    const { error } = await supabase
-      .from('permintaan_langganan')
-      .update({ status, ditinjau_pada: new Date().toISOString() })
-      .eq('id', r.id)
-    setBusy(null)
-    if (error) {
-      showToast('Gagal memperbarui', 'danger')
-      return
+    try {
+      if (status === 'diterima' && r.paket) {
+        const { data: ph } = await supabase
+          .from('perumahan')
+          .select('id, langganan_hingga')
+          .eq('id', r.perumahan_id)
+          .maybeSingle()
+        const now = new Date()
+        const base = ph?.langganan_hingga ? new Date(ph.langganan_hingga + 'T23:59:59') : now
+        const start = base > now ? base : now
+        const end = new Date(start.getTime() + r.paket.durasi_hari * 86400000)
+        const uh = await supabase.from('perumahan').update({ langganan_hingga: end.toISOString() }).eq('id', r.perumahan_id)
+        if (uh.error) throw uh.error
+      }
+      const u = await supabase
+        .from('permintaan_langganan')
+        .update({ status, ditinjau_pada: new Date().toISOString() })
+        .eq('id', r.id)
+      if (u.error) throw u.error
+      showToast(
+        status === 'diterima'
+          ? r.paket
+            ? `Diterima ✅ durasi aktif +${r.paket.durasi_hari} hari`
+            : 'Permintaan diterima ✅'
+          : 'Permintaan ditolak',
+        'success'
+      )
+      load()
+    } catch (e: any) {
+      showToast(e?.message || 'Gagal memperbarui', 'danger')
+    } finally {
+      setBusy(null)
     }
-    showToast(status === 'diterima' ? 'Permintaan diterima ✅' : 'Permintaan ditolak', 'success')
-    load()
   }
 
   const shown = tab === 'semua' ? list : list.filter((r) => r.status === tab)
@@ -89,6 +112,13 @@ export default function PermintaanPage() {
                 Oleh: {r.profiles?.nama || r.pemohon_id.slice(0, 8)} ·{' '}
                 {new Date(r.dibuat_pada).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
               </p>
+              {r.invoice_no && (
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 4 }}>
+                  <span style={{ fontWeight: 700, fontSize: '0.8rem' }}>{r.invoice_no}</span>
+                  {r.paket && <span className="badge badge-blue">{r.paket.nama}</span>}
+                  {r.nominal != null && <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{formatRp(r.nominal)}</span>}
+                </div>
+              )}
               {r.catatan && (
                 <p className="li-sub" style={{ marginTop: 6, whiteSpace: 'pre-wrap' }}>
                   {r.catatan}
@@ -108,7 +138,11 @@ export default function PermintaanPage() {
                 </div>
               )}
               <p className="li-sub" style={{ marginTop: 8 }}>
-                {r.status === 'diterima' || r.status === 'ditolak' ? `Ditinjau ${r.ditinjau_pada ? new Date(r.ditinjau_pada).toLocaleString('id-ID') : ''}` : 'Setelah diterima, atur durasi di menu Kelola Perumahan.'}
+                {r.status === 'diterima' || r.status === 'ditolak'
+                  ? `Ditinjau ${r.ditinjau_pada ? new Date(r.ditinjau_pada).toLocaleString('id-ID') : ''}`
+                  : r.paket
+                    ? 'Terima = invoice lunas & durasi aktif otomatis sesuai paket.'
+                    : 'Setelah diterima, atur durasi di menu Kelola Perumahan.'}
               </p>
             </div>
           ))
