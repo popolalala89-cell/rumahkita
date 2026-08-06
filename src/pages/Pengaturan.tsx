@@ -69,13 +69,17 @@ export default function PengaturanPage() {
     }
     setSavBusy(true)
     try {
-      const { error } = await supabase
-        .from('perumahan')
-        .update({ nama: nama.trim(), alamat: alamat.trim(), warna: warna || null, logo_url: logo.trim() || null })
-        .eq('id', pid)
+      const { data, error } = await supabase.rpc('simpan_info_perumahan', {
+        p_nama: nama.trim(),
+        p_alamat: alamat.trim(),
+        p_warna: warna || null,
+        p_logo_url: logo.trim() || null,
+      })
       if (error) throw error
+      const res = data as { ok?: boolean; error?: string } | null
+      if (res && res.ok === false) throw new Error(res.error || 'Gagal menyimpan')
       await refreshProfile()
-      showToast('Info perumahan disimpan 🎨', 'success')
+      showToast('Info & tampilan disimpan 🎨', 'success')
     } catch {
       showToast('Gagal menyimpan (izin terbatas untuk pengelola)', 'danger')
     } finally {
