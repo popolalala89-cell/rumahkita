@@ -21,6 +21,7 @@ export default function KelolaPerumahanPage() {
   const [rumahCount, setRumahCount] = useState<Record<string, number>>({})
   const [ready, setReady] = useState(false)
   const [busy, setBusy] = useState<string | null>(null)
+  const [lgBusy, setLgBusy] = useState<string | null>(null)
 
   const [fNama, setFNama] = useState('')
   const [fAlamat, setFAlamat] = useState('')
@@ -90,6 +91,39 @@ export default function KelolaPerumahanPage() {
       showToast(e instanceof Error ? e.message : 'Gagal', 'danger')
     } finally {
       setBusy(null)
+    }
+  }
+
+  const addMonths = (d: Date, n: number) => {
+    const x = new Date(d)
+    x.setMonth(x.getMonth() + n)
+    return x
+  }
+
+  const setLangganan = async (ph: Perumahan, mode: '1b' | '3b' | '1t' | 'forever' | 'stop') => {
+    setLgBusy(ph.id)
+    try {
+      const now = new Date()
+      const cur = ph.langganan_hingga ? new Date(ph.langganan_hingga + 'T23:59:59') : null
+      const base = cur && cur > now ? cur : now
+      let value: string | null
+      if (mode === '1b') value = addMonths(base, 1).toISOString().slice(0, 10)
+      else if (mode === '3b') value = addMonths(base, 3).toISOString().slice(0, 10)
+      else if (mode === '1t') {
+        const x = new Date(base)
+        x.setFullYear(x.getFullYear() + 1)
+        value = x.toISOString().slice(0, 10)
+      } else if (mode === 'forever') value = null
+      else value = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+
+      const { error } = await supabase.from('perumahan').update({ langganan_hingga: value }).eq('id', ph.id)
+      if (error) throw error
+      showToast('Status langganan diperbarui', 'success')
+      await load()
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Gagal memperbarui langganan', 'danger')
+    } finally {
+      setLgBusy(null)
     }
   }
 
@@ -176,6 +210,32 @@ export default function KelolaPerumahanPage() {
                   <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>
                     👥 {list.length} akun · 🏠 {rumahCount[ph.id] ?? 0} rumah · ✅ {aktifCount} aktif
                   </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: '8px 0', borderTop: '1px solid var(--border)' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 700 }}>Langganan:</span>
+                <span className={`badge ${ph.langganan_hingga && new Date(ph.langganan_hingga + 'T23:59:59') < new Date() ? 'badge-amber' : 'badge-green'}`}>
+                  {ph.langganan_hingga
+                    ? `sampai ${new Date(ph.langganan_hingga).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`
+                    : 'tanpa batas'}
+                </span>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <button className="btn btn-sm" disabled={lgBusy === ph.id} onClick={() => setLangganan(ph, '1b')}>
+                    +1 bln
+                  </button>
+                  <button className="btn btn-sm" disabled={lgBusy === ph.id} onClick={() => setLangganan(ph, '3b')}>
+                    +3 bln
+                  </button>
+                  <button className="btn btn-sm" disabled={lgBusy === ph.id} onClick={() => setLangganan(ph, '1t')}>
+                    +1 thn
+                  </button>
+                  <button className="btn btn-sm btn-outline" disabled={lgBusy === ph.id} onClick={() => setLangganan(ph, 'forever')}>
+                    Tanpa Batas
+                  </button>
+                  <button className="btn btn-sm btn-danger" disabled={lgBusy === ph.id} onClick={() => setLangganan(ph, 'stop')}>
+                    Hentikan
+                  </button>
                 </div>
               </div>
 

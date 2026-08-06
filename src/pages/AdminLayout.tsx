@@ -58,6 +58,39 @@ export default function AdminLayout() {
     navigate('/masuk', { replace: true })
   }
 
+  // paksa label supaya pemilik langganan yang habis tetap bisa lihat status
+  const expired =
+    profile?.role !== 'super_admin' &&
+    !!perumahan?.langganan_hingga &&
+    new Date(perumahan.langganan_hingga + 'T23:59:59').getTime() < Date.now()
+  if (expired) {
+    return (
+      <div className="app-layout" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <div className="card" style={{ maxWidth: 360, width: '100%', textAlign: 'center' }}>
+          <div style={{ fontSize: 42 }}>🔒</div>
+          <h2>Langganan Berakhir</h2>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+            Masa pakai RumahKita untuk <b>{perumahan?.nama}</b> sudah habis. Hubungi pengurus untuk memperpanjang.
+          </p>
+          <button className="btn btn-outline btn-block" onClick={handleLogout}>
+            Keluar
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  const langgananInfo =
+    profile != null &&
+    profile.role !== 'super_admin' &&
+    perumahan?.langganan_hingga
+      ? `Langganan aktif sampai ${new Date(perumahan.langganan_hingga).toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        })}`
+      : null
+
   return (
     <div className="app-layout">
       <header className="top-app-bar">
@@ -88,16 +121,26 @@ export default function AdminLayout() {
           </div>
         )}
         {profile && !profile.aktif && (
-          <div
-            style={{
-              background: 'var(--warning)', color: '#fff', borderRadius: 12,
-              padding: '10px 14px', marginBottom: 12, fontSize: '0.78rem', fontWeight: 600,
-            }}
-          >
-            ⏳ Akun Anda menunggu persetujuan pengurus. Fitur aktif penuh setelah disetujui.
-          </div>
-        )}
-        <Outlet />
+                  <div
+                    style={{
+                      background: 'var(--warning)', color: '#fff', borderRadius: 12,
+                      padding: '10px 14px', marginBottom: 12, fontSize: '0.78rem', fontWeight: 600,
+                    }}
+                  >
+                    ⏳ Akun Anda menunggu persetujuan pengurus. Fitur aktif penuh setelah disetujui.
+                  </div>
+                )}
+                {langgananInfo && (
+                  <div
+                    style={{
+                      background: 'var(--primary)', color: '#fff', borderRadius: 12,
+                      padding: '10px 14px', marginBottom: 12, fontSize: '0.78rem', fontWeight: 600,
+                    }}
+                  >
+                    ⌛ {langgananInfo}.
+                  </div>
+                )}
+                <Outlet />
       </main>
 
       <nav className="bottom-nav">

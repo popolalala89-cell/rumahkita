@@ -18,6 +18,7 @@ export interface Perumahan {
   kode_undangan: string
   logo_url: string | null
   aktif: boolean
+  langganan_hingga: string | null
   created_at: string
 }
 
