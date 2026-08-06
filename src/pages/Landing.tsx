@@ -49,7 +49,7 @@ export default function Landing() {
       <nav className="lp-nav">
         <div className="lp-nav-inner">
           <div className="lp-logo">
-            <span className="logo-ico">🏘️</span> RumahKita
+            <img src="/icons/app-192.png" alt="" className="logo-ico" /> RumahKita
           </div>
           <div className="lp-nav-links">
             <a href="#fitur" className="hide-sm">Fitur</a>
@@ -219,7 +219,9 @@ export default function Landing() {
       <footer className="lp-footer">
         <div className="lp-footer-inner">
           <div>
-            <h4>🏘️ RumahKita</h4>
+            <h4>
+              <img src="/icons/app-192.png" alt="" style={{ height: 20, width: 20, verticalAlign: 'middle', marginRight: 6, borderRadius: 4 }} /> RumahKita
+            </h4>
             <p>
               Aplikasi manajemen perumahan berbasis web — bisa dibuka dari HP, tablet, maupun komputer. Data tersimpan
               aman di cloud, siap dipakai kapan saja.
