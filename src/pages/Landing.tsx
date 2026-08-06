@@ -189,7 +189,7 @@ export default function Landing() {
                     {formatRp(p.harga)} <small>/ periode</small>
                   </div>
                   <p className="pk-desc">{p.deskripsi || `Aktifkan aplikasi perumahan Anda selama ${p.durasi_hari} hari.`}</p>
-                  <Link to="/daftar" className="lp-btn lp-btn-ghost" style={{ background: i === 1 ? 'var(--primary)' : 'var(--surface)', color: i === 1 ? '#fff' : 'var(--primary)', border: i === 1 ? 'none' : '1px solid var(--border)' }}>
+                  <Link to="/mulai" className="lp-btn lp-btn-ghost" style={{ background: i === 1 ? 'var(--primary)' : 'var(--surface)', color: i === 1 ? '#fff' : 'var(--primary)', border: i === 1 ? 'none' : '1px solid var(--border)' }}>
                     Mulai Sekarang
                   </Link>
                 </div>
