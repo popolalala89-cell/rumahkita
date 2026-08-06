@@ -15,8 +15,8 @@ delete from warga w
 using warga w2
 where w.id > w2.id
   and w.nama = w2.nama
-  and coalesce(w.rumah_id, 0) = coalesce(w2.rumah_id, 0)
-  and coalesce(w.no_hp, '')  = coalesce(w2.no_hp, '');
+  and w.rumah_id is not distinct from w2.rumah_id
+  and w.no_hp   is not distinct from w2.no_hp;
 
 -- 3) VERIFIKASI: setelah hapus, jumlah warga harus menurun
 --    (chip "Warga · N" jadi N yang benar).
