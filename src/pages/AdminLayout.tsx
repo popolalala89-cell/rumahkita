@@ -25,6 +25,7 @@ const ALL_ITEMS: NavItem[] = [
   { id: 'aset', label: 'Aset', icon: 'inventory_2', route: '/app/aset', roles: ['ketua', 'bendahara', 'sekretaris'] },
   { id: 'dokumen', label: 'Dokumen', icon: 'folder', route: '/app/dokumen', roles: ['warga', 'ketua', 'bendahara', 'sekretaris'] },
   { id: 'pengaturan', label: 'Pengaturan', icon: 'settings', route: '/app/pengaturan', roles: ['ketua'] },
+  { id: 'kelola', label: 'Kelola Perumahan', icon: 'apartment', route: '/app/kelola', roles: ['super_admin'] },
 ]
 
 export default function AdminLayout() {
