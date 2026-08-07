@@ -87,10 +87,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     })
 
+    // Saat tab kembali terlihat (setelah ditinggal lama di background), segarkan
+    // ulang token sesi supaya tidak kelepas-diksasi dan kelempar ke layar masuk.
+    // Timer refresh bawaan supabase-js bisa telat saat browser me-throttle tab
+    // background, jadi kita picu ulang eksplisit begitu user kembali.
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        supabase.auth.refreshSession().catch(() => {})
+      }
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', onVisible)
+
     return () => {
       alive = false
       clearTimeout(safety)
       sub.subscription.unsubscribe()
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', onVisible)
     }
   }, [])
 
