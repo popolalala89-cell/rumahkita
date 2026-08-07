@@ -75,7 +75,10 @@ async function main() {
     subs.map(async (s) => {
       const sub = { endpoint: s.endpoint, keys: { auth: s.auth, p256dh: s.p256dh } }
       try {
-        await webpush.sendNotification(sub, payload)
+        await webpush.sendNotification(sub, payload, {
+        urgency: 'high', // peluang lebih besar tampil sebagai popup heads-up
+        TTL: 86400,
+      })
         ok++
       } catch (e) {
         // 404/410 = langganan kedaluwarsa; 410 bisa dihapus

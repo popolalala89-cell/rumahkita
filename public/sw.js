@@ -111,6 +111,7 @@ self.addEventListener('push', (e) => {
     icon: BASE + '/icons/app-192.png',
     badge: BASE + '/icons/app-192.png',
     data: { url: data.url || BASE + '/app' },
+    requireInteraction: true, // biar heads-up tidak cepat hilang (peluang popup lebih besar)
   }
   e.waitUntil(self.registration.showNotification(title, options))
 })
