@@ -3,13 +3,20 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { showToast } from '../lib/toast'
 
-// Panel kirim notifikasi ke SEMUA perangkat terdaftar (khusus Super Admin,
-// di menu Kelola Perumahan). Memanggil Supabase Edge Function 'kirim-notif'
-// yang menyimpan kunci VAPID private aman di server.
+const NAMA_BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
+
+// Panel kirim notifikasi web push (dipakai menu "Kirim Notif" utk pengurus &
+// menu Kelola Perumahan utk Super Admin). Memanggil Edge Function 'kirim-notif'
+// (kunci VAPID private aman di server). Sasaran bisa "semua warga" atau
+// "hanya yang belum bayar iuran" (tagihan status 'belum' pada bulan/tahun pilihan).
 export default function KirimNotifPanel() {
   const { profile } = useAuth()
+  const d = new Date()
   const [judul, setJudul] = useState('')
   const [isi, setIsi] = useState('')
+  const [target, setTarget] = useState<'semua' | 'belum_bayar'>('semua')
+  const [bulan, setBulan] = useState(d.getMonth() + 1)
+  const [tahun, setTahun] = useState(d.getFullYear())
   const [busy, setBusy] = useState(false)
   const [hasil, setHasil] = useState<string | null>(null)
 
@@ -19,12 +26,15 @@ export default function KirimNotifPanel() {
     if (!perumahan_id) return showToast('Perumahan belum terhubung.', 'danger')
     setBusy(true)
     setHasil(null)
-    const { data, error } = await supabase.functions.invoke('kirim-notif', {
-      body: { perumahan_id, judul: judul.trim(), isi: isi.trim(), url: '/app' },
-    })
+    const body: Record<string, unknown> = { perumahan_id, judul: judul.trim(), isi: isi.trim(), url: '/app' }
+    if (target === 'belum_bayar') {
+      body.target = 'belum_bayar'
+      body.bulan = bulan
+      body.tahun = tahun
+    }
+    const { data, error } = await supabase.functions.invoke('kirim-notif', { body })
     setBusy(false)
     if (error) {
-      // error dari transport; detail di data
       const msg = (data as { error?: string })?.error ?? error.message
       showToast('Gagal kirim: ' + msg, 'danger')
       return
@@ -35,7 +45,14 @@ export default function KirimNotifPanel() {
     }
     const t = data?.terkirim ?? 0
     const g = data?.gagal ?? 0
-    setHasil(`Notifikasi terkirim ke ${t} perangkat.${g > 0 ? ` ${g} gagal.` : ''}`)
+    const sas = data?.sasaran ?? null
+    if (target === 'belum_bayar' && sas === 0) {
+      setHasil('Tidak ada warga yang belum bayar pada bulan itu — tidak ada yang dikirim. ✅')
+      showToast('Semua sudah bayar / belum ada tagihan bulan itu', 'warning')
+      return
+    }
+    const sasTxt = sas !== null && sas !== t ? ` (sasaran ${sas} perangkat)` : ''
+    setHasil(`Notifikasi terkirim ke ${t} perangkat${sasTxt}.${g > 0 ? ` ${g} gagal.` : ''}`)
     showToast(`Terkirim ke ${t} perangkat 🔔`, 'success')
     setJudul('')
     setIsi('')
@@ -48,7 +65,7 @@ export default function KirimNotifPanel() {
         <div>
           <h3 style={{ margin: 0 }}>Kirim Notifikasi ke Warga</h3>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            Broadcast web push ke semua perangkat terdaftar perumahan ini (muncul di layar HP walau app ditutup).
+            Web push muncul di layar HP walau aplikasi ditutup. Pilih sasaran: semua warga, atau hanya yang belum bayar iuran.
           </div>
         </div>
       </div>
@@ -76,9 +93,47 @@ export default function KirimNotifPanel() {
         />
       </div>
 
+      <div className="form-group" style={{ marginTop: 12 }}>
+        <label className="form-label">Sasaran</label>
+        <select
+          className="form-control"
+          value={target}
+          onChange={(e) => setTarget(e.target.value as 'semua' | 'belum_bayar')}
+        >
+          <option value="semua">Semua warga (broadcast)</option>
+          <option value="belum_bayar">Hanya yang belum bayar iuran</option>
+        </select>
+      </div>
+
+      {target === 'belum_bayar' && (
+        <div style={{ marginTop: 12, display: 'flex', gap: 10 }}>
+          <div className="form-group" style={{ flex: 1 }}>
+            <label className="form-label">Bulan tagihan</label>
+            <select
+              className="form-control"
+              value={bulan}
+              onChange={(e) => setBulan(parseInt(e.target.value))}
+            >
+              {NAMA_BULAN.map((b, i) => (
+                <option key={b} value={i + 1}>{b}</option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group" style={{ flex: 1 }}>
+            <label className="form-label">Tahun</label>
+            <input
+              className="form-control"
+              inputMode="numeric"
+              value={tahun}
+              onChange={(e) => setTahun(parseInt(e.target.value) || new Date().getFullYear())}
+            />
+          </div>
+        </div>
+      )}
+
       <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
         <button className="btn btn-primary" onClick={kirim} disabled={busy}>
-          {busy ? '⏳ Mengirim…' : '🚀 Kirim ke Semua Warga'}
+          {busy ? '⏳ Mengirim…' : target === 'belum_bayar' ? '🔔 Kirim Pengingat ke yang Belum Bayar' : '🚀 Kirim ke Semua Warga'}
         </button>
       </div>
 

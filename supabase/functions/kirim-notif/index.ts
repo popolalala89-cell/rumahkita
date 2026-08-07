@@ -69,11 +69,52 @@ Deno.serve(async (req) => {
       return json(cors, { ok: false, error: "VAPID belum dikonfigurasi di server" }, 500)
     }
 
-    // Baca semua subscriber perumahan ini (pakai token super_admin, RLS lolos)
-    const { data: subs, error: se } = await supabase
+    // Sasaran kirim: 'semua' (default, broadcast ke semua perangkat terdaftar)
+    // atau 'belum_bayar' (hanya warga yang masih punya tagihan iuran belum
+    // lunas pada bulan/tahun tertentu). Bulan/tahun default = bulan berjalan.
+    const target = String(body?.target ?? "semua").trim()
+    const bulan = parseInt(String(body?.bulan ?? new Date().getMonth() + 1), 10)
+    const tahun = parseInt(String(body?.tahun ?? new Date().getFullYear()), 10)
+
+    // Baca subscriber perumahan ini. Pengurus cuma bisa kirim ke perumahan
+    // SENDIRI (perumahanId sudah dipatok di atas); butuh policy RLS baca utk
+    // pengurus (file supabase/untuk_pa/notifikasi_pengurus.sql) supaya
+    // pengurus bisa melihat semua langganan perumahannya.
+    let subQuery = supabase
       .from("notifikasi_subscriptions")
-      .select("id, endpoint, p256dh, auth")
+      .select("id, endpoint, p256dh, auth, user_id")
       .eq("perumahan_id", perumahanId)
+
+    if (target === "belum_bayar") {
+      // Cari rumah yang masih punya tagihan 'belum' pada periode itu
+      const { data: blm, error: be } = await supabase
+        .from("tagihan")
+        .select("rumah_id")
+        .eq("perumahan_id", perumahanId)
+        .eq("bulan", bulan)
+        .eq("tahun", tahun)
+        .eq("status", "belum")
+      if (be) return json(cors, { ok: false, error: "Gagal cek tagihan: " + be.message }, 500)
+      const rumahIds = [...new Set((blm ?? []).map((r) => r.rumah_id))]
+      if (rumahIds.length === 0) {
+        return json(cors, { ok: true, terkirim: 0, gagal: 0, sasaran: 0, bulan, tahun })
+      }
+      // Semua akun warga di rumah yang belum bayar itu
+      const { data: prf, error: pe } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("perumahan_id", perumahanId)
+        .eq("role", "warga")
+        .in("rumah_id", rumahIds)
+      if (pe) return json(cors, { ok: false, error: "Gagal cek warga: " + pe.message }, 500)
+      const userIds = (prf ?? []).map((p) => p.id)
+      if (userIds.length === 0) {
+        return json(cors, { ok: true, terkirim: 0, gagal: 0, sasaran: 0, bulan, tahun })
+      }
+      subQuery = subQuery.in("user_id", userIds)
+    }
+
+    const { data: subs, error: se } = await subQuery
     if (se) return json(cors, { ok: false, error: "Gagal baca langganan: " + se.message }, 500)
 
     webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUB, VAPID_PRIV)
@@ -98,7 +139,7 @@ Deno.serve(async (req) => {
       }
     }))
 
-    return json(cors, { ok: true, terkirim: ok, gagal: fail, dihapus_kedaluwarsa: removed })
+    return json(cors, { ok: true, terkirim: ok, gagal: fail, dihapus_kedaluwarsa: removed, sasaran: (subs ?? []).length })
   } catch (e) {
     return json(cors, { ok: false, error: "Terjadi kesalahan: " + (e?.message ?? "tidak diketahui") }, 500)
   }
