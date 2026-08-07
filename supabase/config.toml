@@ -1,0 +1,7 @@
+# Supabase config minimal untuk project ini.
+# Dipakai oleh supabase CLI (via GitHub Actions) saat deploy Edge Function.
+
+project_id = "rumahkita"
+
+[functions.kirim-notif]
+verify_jwt = true

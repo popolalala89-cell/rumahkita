@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { showToast } from '../lib/toast'
 import { QrisAdminCard } from '../components/QrisPanel'
 import PaketAdminCard from '../components/PaketPanel'
+import KirimNotifPanel from '../components/KirimNotifPanel'
 import type { Perumahan, Profile, Role } from '../lib/types'
 
 const ROLE_LABEL: Record<string, string> = {
@@ -187,6 +188,7 @@ export default function KelolaPerumahanPage() {
 
       <QrisAdminCard />
       <PaketAdminCard />
+      <KirimNotifPanel />
 
       {!ready ? (
         <div className="loading-screen" style={{ minHeight: '30dvh' }}>

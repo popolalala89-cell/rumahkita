@@ -1,0 +1,35 @@
+name: Deploy Edge Function kirim-notif
+
+on:
+  push:
+    paths:
+      - 'supabase/functions/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_ID: ${{ vars.SUPABASE_PROJECT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup supabase CLI
+        uses: supabase/setup-cli@v1
+
+      - name: Link project
+        run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
+        working-directory: supabase
+
+      - name: Set VAPID secrets (private key dari GitHub secret, tidak masuk repo)
+        run: |
+          supabase secrets set --project-ref "$SUPABASE_PROJECT_ID" \
+            VAPID_PUBLIC_KEY="${{ secrets.VAPID_PUBLIC_KEY }}" \
+            VAPID_PRIVATE_KEY="${{ secrets.VAPID_PRIVATE_KEY }}" \
+            VAPID_SUBJECT="${{ secrets.VAPID_SUBJECT }}"
+
+      - name: Deploy function
+        run: supabase functions deploy kirim-notif --project-ref "$SUPABASE_PROJECT_ID"
+        working-directory: supabase
