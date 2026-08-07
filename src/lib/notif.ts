@@ -45,7 +45,20 @@ export async function subscribePush(
     if (perm !== 'granted') {
       return { ok: false, error: perm === 'denied' ? 'diblokir' : 'ditolak' }
     }
-    const reg = await navigator.serviceWorker.ready
+    // Pastikan service worker aktif & sudah diperbarui sebelum subscribe
+    let reg = await navigator.serviceWorker.ready
+    try {
+      if (navigator.serviceWorker.getRegistration) {
+        const cur = await navigator.serviceWorker.getRegistration()
+        if (cur?.active && cur.active !== reg.active) reg = cur
+      }
+    } catch {
+      /* abaikan; lanjut pakai reg.ready */
+    }
+    // Coba refresh SW (tangani kasus versi lama yang masih memegang registrasi)
+    try {
+      if (typeof reg.update === 'function') await reg.update()
+    } catch { /* abaikan */ }
     let sub = await reg.pushManager.getSubscription()
     if (!sub) {
       sub = await reg.pushManager.subscribe({
@@ -70,7 +83,20 @@ export async function subscribePush(
     if (error) throw error
     return { ok: true }
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : 'gagal' }
+    const msg = e instanceof Error ? e.message : 'gagal'
+    // Terjemahkan pesan teknis browser jadi petunjuk yang jelas
+    const lower = msg.toLowerCase()
+    if (lower.includes('push service')) {
+      return {
+        ok: false,
+        error:
+          'push-service-gagal',
+      }
+    }
+    if (lower.includes('notallow') || lower.includes('permission')) {
+      return { ok: false, error: 'diblokir' }
+    }
+    return { ok: false, error: msg }
   }
 }
 

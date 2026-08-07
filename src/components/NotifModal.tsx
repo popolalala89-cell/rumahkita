@@ -19,6 +19,7 @@ export default function NotifModal({ open, onClose }: Props) {
   const [perm, setPerm] = useState<NotificationPermission | 'unsupported'>('default')
   const [subscribed, setSubscribed] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [help, setHelp] = useState(false)
 
   const refresh = async () => {
     setPerm(notifPermission())
@@ -39,6 +40,10 @@ export default function NotifModal({ open, onClose }: Props) {
     setBusy(false)
     if (r.ok) {
       showToast('Notifikasi aktif 🔔', 'success')
+      void refresh()
+    } else if (r.error === 'push-service-gagal') {
+      setBusy(false)
+      setHelp(true) // tampilkan panduan kasus layanan push tidak bisa dipakai
       void refresh()
     } else if (r.error === 'diblokir') {
       showToast('Notifikasi diblokir di browser. Izinkan lewat pengaturan browser.', 'danger')
@@ -65,6 +70,35 @@ export default function NotifModal({ open, onClose }: Props) {
 
   return (
     <Modal open={open} onClose={onClose} title="🔔 Notifikasi">
+      {help && (
+        <div
+          className="card"
+          style={{ background: '#eef4ff', padding: 14, marginBottom: 12, borderLeft: '4px solid var(--primary)' }}
+        >
+          <div style={{ display: 'flex', gap: 10 }}>
+            <span style={{ fontSize: 22 }}>💡</span>
+            <div>
+              <div style={{ fontWeight: 700 }}>Kenapa gagal & cara memperbaikinya</div>
+              <div style={{ fontSize: '0.78rem', marginTop: 6, lineHeight: 1.5, color: 'var(--text-muted)' }}>
+                Notifikasi tak bisa aktif kemungkinan karena aplikasi dibuka di <b>browser tertanam</b> (mis. dari dalam
+                aplikasi chat) atau karena instalasi web belum di-pasang ke layar utama. Coba langkah ini:
+                <ol style={{ margin: '8px 0 0 16px', padding: 0 }}>
+                  <li>
+                    <b>Buka lewat Chrome nyata:</b> dari aplikasi chat, pilih <b>⋮ / "Buka di Chrome"</b> (bukan buka di
+                    jendela chat).
+                  </li>
+                  <li>
+                    <b>iPhone/Safari:</b> web notification baru jalan setelah situs <b>di-Pasang ke Layar Utama</b> (Kirim
+                    → Tambahkan ke Layar Utama → terus masuk dari ikon itu).
+                  </li>
+                  <li>Setelah itu coba tekan tombol <b>Aktifkan / Munculkan Izin</b> lagi.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {perm === 'unsupported' && (
         <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
           Browser ini belum mendukung notifikasi web. Coba Chrome terbaru (HP/komputer) atau Safari iOS 16.4+.
