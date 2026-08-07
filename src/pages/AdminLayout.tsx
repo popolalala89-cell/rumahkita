@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { usePwaInstall } from '../lib/pwa'
 import { showToast } from '../lib/toast'
+import NotifModal from '../components/NotifModal'
 import { ROLE_LABEL } from '../lib/types'
 import type { Role } from '../lib/types'
 
@@ -35,6 +36,7 @@ export default function AdminLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
   const { canInstall, promptInstall } = usePwaInstall()
   const [bannerHidden, setBannerHidden] = useState(() => sessionStorage.getItem('rk_pwa_hide') === '1')
 
@@ -117,7 +119,17 @@ export default function AdminLayout() {
           <span className="mat-icon">menu</span>
         </button>
         <span className="bar-title">{title}</span>
-        <div className="bar-avatar">{(profile?.nama || '?').charAt(0).toUpperCase()}</div>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <button
+            className="bar-icon-btn"
+            aria-label="Notifikasi"
+            onClick={() => setNotifOpen(true)}
+            style={{ background: 'transparent', border: 'none', padding: 8, cursor: 'pointer', color: 'inherit' }}
+          >
+            <span className="mat-icon">notifications</span>
+          </button>
+          <div className="bar-avatar">{(profile?.nama || '?').charAt(0).toUpperCase()}</div>
+        </div>
       </header>
 
       <main className="tab-content">
@@ -216,6 +228,8 @@ export default function AdminLayout() {
           </button>
         </div>
       </aside>
+
+      <NotifModal open={notifOpen} onClose={() => setNotifOpen(false)} />
     </div>
   )
 }
