@@ -42,12 +42,18 @@ Deno.serve(async (req) => {
       .select("role, perumahan_id")
       .eq("id", user.id)
       .single()
-    if (!me || me.role !== "super_admin") {
-      return json(cors, { ok: false, error: "Hanya admin yang boleh mengirim broadcast" }, 403)
+    const ALLOWED = ["ketua", "bendahara", "sekretaris", "super_admin"]
+    if (!me || !ALLOWED.includes(me.role)) {
+      return json(cors, { ok: false, error: "Hanya pengurus perumahan yang boleh mengirim broadcast" }, 403)
     }
 
     const body = await req.json().catch(() => ({}))
-    const perumahanId = String(body?.perumahan_id || me.perumahan_id || "").trim()
+    // Pengurus HANYA boleh kirim ke perumahan-nya SENDIRI (abaikan perumahan_id
+    // dari body supaya tidak bisa kena broadcast ke perumahan lain). Super admin
+    // boleh pilih perumahan mana pun.
+    const perumahanId = me.role === "super_admin"
+      ? String(body?.perumahan_id || me.perumahan_id || "").trim()
+      : String(me.perumahan_id || "").trim()
     if (!perumahanId || perumahanId === "null") {
       return json(cors, { ok: false, error: "perumahan_id diperlukan" }, 400)
     }

@@ -18,6 +18,7 @@ import AsetPage from './pages/Aset'
 import DokumenPage from './pages/Dokumen'
 import PengaturanPage from './pages/Pengaturan'
 import KelolaPerumahanPage from './pages/KelolaPerumahan'
+import KirimNotifPage from './pages/KirimNotif'
 import LanggananPage from './pages/Langganan'
 import PermintaanPage from './pages/Permintaan'
 import Placeholder from './pages/Placeholder'
@@ -79,6 +80,7 @@ export default function App() {
           <Route path="langganan" element={<LanggananPage />} />
           <Route path="permintaan" element={<PermintaanPage />} />
           <Route path="kelola" element={<KelolaPerumahanPage />} />
+          <Route path="notifikasi" element={<KirimNotifPage />} />
           <Route path="*" element={<Placeholder />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

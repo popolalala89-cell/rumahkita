@@ -22,6 +22,7 @@ const ALL_ITEMS: NavItem[] = [
   { id: 'kas', label: 'Kas', icon: 'account_balance', route: '/app/kas', roles: ['ketua', 'bendahara', 'sekretaris'] },
   { id: 'layanan', label: 'Layanan', icon: 'support_agent', route: '/app/layanan', roles: ['warga', 'ketua', 'bendahara', 'sekretaris'] },
   { id: 'komunitas', label: 'Komunitas', icon: 'campaign', route: '/app/komunitas', roles: ['warga', 'ketua', 'bendahara', 'sekretaris'] },
+  { id: 'notifikasi', label: 'Kirim Notif', icon: 'notifications_active', route: '/app/notifikasi', roles: ['ketua', 'bendahara', 'sekretaris'] },
   { id: 'keamanan', label: 'Keamanan', icon: 'shield', route: '/app/keamanan', roles: ['ketua', 'bendahara', 'sekretaris', 'satpam'] },
   { id: 'aset', label: 'Aset', icon: 'inventory_2', route: '/app/aset', roles: ['ketua', 'bendahara', 'sekretaris'] },
   { id: 'dokumen', label: 'Dokumen', icon: 'folder', route: '/app/dokumen', roles: ['warga', 'ketua', 'bendahara', 'sekretaris'] },
