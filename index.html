@@ -28,11 +28,13 @@
     />
     <title>RumahKita — Manajemen Perumahan</title>
     <script>
-      // Penjaga boot: kalau app belum hidup (window.__rkBoot=true) dalam 5 dtk —
+      // Penjaga boot: kalau app belum hidup (window.__rkBoot=true) dalam ~12 dtk —
       // mis. service worker lama masih menyajikan shell yang bundle-nya sudah
-      // tak ada di server — simpan halaman yang sedang dibuka, lalu muat ulang
-      // dari halaman depan. main.tsx akan otomatis balik ke halaman tadi
-      // (bukan beranda).
+      // tak ada di server ATAU bundle besar sedang lambat diunduh (CDN lemot) —
+      // simpan halaman yang sedang dibuka, lalu muat ulang dari halaman depan.
+      // main.tsx akan otomatis balik ke halaman tadi (bukan beranda).
+      // Hanya force-reload SEKALI (rkRetry) supaya tidak infinite loop saat
+      // jaringan/CDN melambat.
       window.__rkBoot = false
       setTimeout(function () {
         if (window.__rkBoot) return
@@ -40,9 +42,11 @@
           if (!sessionStorage.getItem('redirect')) {
             sessionStorage.setItem('redirect', location.pathname + location.search)
           }
+          if (sessionStorage.getItem('rkRetry')) return // sudah reload sekali; lewati
+          sessionStorage.setItem('rkRetry', '1')
         } catch (e) {}
         location.replace('/?rk=' + Math.random().toString(16).slice(2))
-      }, 5000)
+      }, 12000)
     </script>
   </head>
   <body>
